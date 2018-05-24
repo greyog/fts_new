@@ -37,9 +37,9 @@ class RetrofitHelper {
     interface OnResponseListener {
         fun onResponse(responseResult: MyResponseResult?)
         fun onResponseTechData(raw: String?)
-        fun onSummaryResponse(body: MyResponseSummaryResult?)
         fun onHappySessId()
         fun onBadSessId()
+        fun onSummaryResponse(columns: ArrayList<String>, items: ArrayList<SummaryListItem>)
     }
 
     init {
@@ -98,7 +98,11 @@ class RetrofitHelper {
         override fun intercept(chain: Interceptor.Chain?): okhttp3.Response {
             val response = chain!!.proceed(chain.request())
             val body = response.peekBody(Long.MAX_VALUE)
-            val doc = Jsoup.parse(body?.string())
+            var raw = body.string()!!
+            raw = raw.replace("""\n""","")
+            raw = raw.replace("""\t""","")
+            raw = raw.replace("""\""","")
+            val doc = Jsoup.parse(raw)
             val head = doc.getElementsByTag("thead")
             val cols = ArrayList<String>()
             head.select("th").forEach {
@@ -106,8 +110,43 @@ class RetrofitHelper {
                 cols.add(it.text())
             }
             val itemList = ArrayList<SummaryListItem>()
-            val element = doc.getElementsByTag("tbody")
-
+            itemList.add(SummaryListItem())
+            val tbody = doc.getElementsByTag("tbody")
+            for (tr in tbody.select("tr")) {
+                val pid = tr.attr("data-pairid")
+                val type = tr.attr("data-row-type")
+//                var lastItem = if (itemList.isEmpty()) {
+//                    val new = SummaryListItem()
+//                    itemList.add(new)
+//                    new
+//                } else itemList.last()
+                var lastItem = itemList.last()
+                if (lastItem.pid == null) {
+                    lastItem.pid = pid
+                }
+                if (lastItem.pid != pid) {
+                    lastItem = SummaryListItem()
+                    itemList.add(lastItem)
+                    lastItem.pid = pid
+                }
+                for (td in tr.select("td")) {
+                    if (td.hasClass("symbol")){
+                        val a = td.getElementsByTag("a").first()
+                        lastItem.name = a.text()
+                        val p = td.getElementsByTag("p").first()
+                        lastItem.price = p.text()
+                        continue
+                    }
+                    if (td.hasClass("type")) continue
+                    when {
+                        type.contains("movingAverages") -> lastItem.mas.add(td.text())
+                        type.contains( "indicators") -> lastItem.inds.add(td.text())
+                        type.contains( "summary") -> lastItem.sums.add(td.text())
+                    }
+                }
+            }
+            instance.onResponseListener?.onSummaryResponse(cols, itemList)
+//            println(itemList)
             return response
         }
 

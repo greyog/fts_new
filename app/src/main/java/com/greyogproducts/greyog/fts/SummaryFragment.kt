@@ -22,6 +22,10 @@ import com.greyogproducts.greyog.fts.dummy.DummyContent.DummyItem
  * [SummaryFragment.OnListFragmentInteractionListener] interface.
  */
 class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener {
+    override fun onSummaryResponse(columns: ArrayList<String>, items: ArrayList<SummaryListItem>) {
+
+    }
+
     override fun onBadSessId() {
         Toast.makeText(context,"BAD CONNECTION!", Toast.LENGTH_SHORT).show()
     }
@@ -39,18 +43,6 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun onSummaryResponse(body: MyResponseSummaryResult?) {
-        val alert = AlertDialog.Builder(this.context)
-        alert.setTitle("Title here")
-//        Log.d(TAG, "onSummaryResponse: html" + body.html);
-
-        val wv = WebView(this.context)
-        wv.loadData(body?.html, null, null)
-
-        alert.setView(wv)
-        alert.setNegativeButton("Close") { dialog, id -> dialog.dismiss() }
-        alert.show()
-    }
 
     // TODO: Customize parameters
     private var columnCount = 1
@@ -76,7 +68,7 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener {
                     columnCount <= 1 -> LinearLayoutManager(context)
                     else -> GridLayoutManager(context, columnCount)
                 }
-                adapter = MyPairRecyclerViewAdapter(DummyContent.ITEMS, listener)
+                adapter = MyPairRecyclerViewAdapter(null, listener)
             }
         }
         RetrofitHelper.instance.onResponseListener = this
@@ -110,7 +102,7 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener {
      */
     interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        fun onListFragmentInteraction(item: DummyItem?)
+        fun onListFragmentInteraction(item: SummaryListItem?)
     }
 
     companion object {

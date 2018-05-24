@@ -8,4 +8,8 @@ class SummaryListItem {
     val inds = ArrayList<String>()
     val mas = ArrayList<String>()
     val sums = ArrayList<String>()
+    var name: String? = null
+    override fun toString(): String {
+        return "id: $pid, name: $name, sums: $sums\n"
+    }
 }
