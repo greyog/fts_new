@@ -9,7 +9,9 @@ class SummaryListItem {
     val mas = ArrayList<String>()
     val sums = ArrayList<String>()
     var name: String? = null
+    var symbol: String? = null
+
     override fun toString(): String {
-        return "id: $pid, name: $name, sums: $sums\n"
+        return "id: $pid, symbol: $symbol, name: $name, sums: $sums\n"
     }
 }

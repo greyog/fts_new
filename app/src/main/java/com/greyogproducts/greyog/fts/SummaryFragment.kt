@@ -15,6 +15,7 @@ import android.widget.Toast
 
 import com.greyogproducts.greyog.fts.dummy.DummyContent
 import com.greyogproducts.greyog.fts.dummy.DummyContent.DummyItem
+import kotlinx.android.synthetic.main.fragment_pair_list.*
 
 /**
  * A fragment representing a list of Items.
@@ -23,6 +24,11 @@ import com.greyogproducts.greyog.fts.dummy.DummyContent.DummyItem
  */
 class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener {
     override fun onSummaryResponse(columns: ArrayList<String>, items: ArrayList<SummaryListItem>) {
+        val newAdapter = MyPairRecyclerViewAdapter(items, listener)
+        activity.runOnUiThread({
+            list.adapter = newAdapter
+//            list.adapter.notifyDataSetChanged()
+        })
 
     }
 

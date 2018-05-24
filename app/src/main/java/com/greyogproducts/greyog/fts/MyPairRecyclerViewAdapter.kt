@@ -46,6 +46,12 @@ class MyPairRecyclerViewAdapter(
         val item = mValues[position]
         holder.tvPid.text = item.pid
         holder.tvName.text = item.name
+        holder.tvSymbol.text = item.symbol
+        for (s in item.sums) {
+            val tv = TextView(holder.itemView.context)
+            tv.text = s
+            holder.llSummary.addView(tv)
+        }
 
         with(holder.mView) {
             tag = item
@@ -53,11 +59,15 @@ class MyPairRecyclerViewAdapter(
         }
     }
 
-    override fun getItemCount(): Int = mValues.size
+    override fun getItemCount(): Int = mValues?.size ?: 0
 
     inner class ViewHolder(val mView: View) : RecyclerView.ViewHolder(mView) {
         val tvPid: TextView = mView.tvPid
         val tvName: TextView = mView.tvName
+        val tvSymbol : TextView = mView.tvSymbol
+        val llSummary = mView.llSummary
+        val llMa = mView.llMa
+        val llInd = mView.llInd
 
         override fun toString(): String {
             return super.toString() + " '" + tvPid.text + " : "+tvName.text + "'"
