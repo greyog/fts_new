@@ -1,9 +1,11 @@
 package com.greyogproducts.greyog.fts
 
 import android.support.v7.widget.RecyclerView
+import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 
 
@@ -11,6 +13,7 @@ import com.greyogproducts.greyog.fts.SummaryFragment.OnListFragmentInteractionLi
 import com.greyogproducts.greyog.fts.dummy.DummyContent.DummyItem
 
 import kotlinx.android.synthetic.main.fragment_pair.view.*
+import kotlinx.android.synthetic.main.simple_text_view.view.*
 
 /**
  * [RecyclerView.Adapter] that can display a [DummyItem] and makes a call to the
@@ -47,11 +50,13 @@ class MyPairRecyclerViewAdapter(
         holder.tvPid.text = item.pid
         holder.tvName.text = item.name
         holder.tvSymbol.text = item.symbol
-        for (s in item.sums) {
-            val tv = TextView(holder.itemView.context)
-            tv.text = s
-            holder.llSummary.addView(tv)
-        }
+        if (holder.llSummary.childCount == 0)
+            for (s in item.sums) {
+                val view = LayoutInflater.from(holder.itemView.context)
+                        .inflate(R.layout.simple_text_view, holder.llSummary , false)
+                view.tvSimple.text = s
+                holder.llSummary.addView(view)
+            }
 
         with(holder.mView) {
             tag = item
