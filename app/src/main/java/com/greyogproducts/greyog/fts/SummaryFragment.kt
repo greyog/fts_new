@@ -1,33 +1,49 @@
 package com.greyogproducts.greyog.fts
 
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
+import android.os.Parcelable
+import android.preference.PreferenceManager
 import android.support.v4.app.Fragment
+import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AlertDialog
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.WebView
+import android.widget.LinearLayout
 import android.widget.Toast
-
-import com.greyogproducts.greyog.fts.dummy.DummyContent
-import com.greyogproducts.greyog.fts.dummy.DummyContent.DummyItem
 import kotlinx.android.synthetic.main.fragment_pair_list.*
+import kotlinx.android.synthetic.main.fragment_pair_list.view.*
+import kotlinx.android.synthetic.main.simple_text_view.view.*
 
 /**
  * A fragment representing a list of Items.
  * Activities containing this fragment MUST implement the
  * [SummaryFragment.OnListFragmentInteractionListener] interface.
  */
-class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener {
+class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefreshLayout.OnRefreshListener {
+    override fun onRefresh() {
+        srLayout.isRefreshing = true
+        RetrofitHelper.instance.doSummaryRequest(null,null)
+    }
+
+    private var mColumns = ArrayList<String>()
+
     override fun onSummaryResponse(columns: ArrayList<String>, items: ArrayList<SummaryListItem>) {
         val newAdapter = MyPairRecyclerViewAdapter(items, listener)
         activity.runOnUiThread({
+            Toast.makeText(context,"Loaded ${items.size} items", Toast.LENGTH_SHORT).show()
             list.adapter = newAdapter
-//            list.adapter.notifyDataSetChanged()
+            llColumns.removeAllViews()
+            this.mColumns = columns
+            for (col in columns) {
+                val view = LayoutInflater.from(context)
+                        .inflate(R.layout.simple_text_view, llColumns, false)
+                view.tvSimple.text = col
+                llColumns.addView(view)
+            }
+            srLayout.isRefreshing = false
         })
 
     }
@@ -37,7 +53,8 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener {
     }
 
     override fun onHappySessId() {
-        Toast.makeText(context,"session ID obtained", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context,"Connection OK", Toast.LENGTH_SHORT).show()
+        srLayout.isRefreshing = true
         RetrofitHelper.instance.doSummaryRequest(null,null)
     }
 
@@ -52,6 +69,8 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener {
 
     // TODO: Customize parameters
     private var columnCount = 1
+    private lateinit var llColumns : LinearLayout
+    private lateinit var srLayout: SwipeRefreshLayout
 
     private var listener: OnListFragmentInteractionListener? = null
 
@@ -66,17 +85,20 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_pair_list, container, false)
-
+        srLayout = view.swipeContainer
+        srLayout.setOnRefreshListener(this)
+        llColumns = view.llColumns
         // Set the adapter
-        if (view is RecyclerView) {
-            with(view) {
-                layoutManager = when {
-                    columnCount <= 1 -> LinearLayoutManager(context)
-                    else -> GridLayoutManager(context, columnCount)
-                }
-                adapter = MyPairRecyclerViewAdapter(null, listener)
-            }
-        }
+//        if (view is RecyclerView) {
+//            with(view) {
+//                layoutManager = when {
+//                    columnCount <= 1 -> LinearLayoutManager(context)
+//                    else -> GridLayoutManager(context, columnCount)
+//                }
+//                adapter = MyPairRecyclerViewAdapter(null, listener)
+//            }
+//        }
+
         RetrofitHelper.instance.onResponseListener = this
         return view
     }
@@ -111,6 +133,30 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener {
         fun onListFragmentInteraction(item: SummaryListItem?)
     }
 
+    fun showSortDialog() {
+        val builder = AlertDialog.Builder(this.context)
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this.context)
+        val sort = prefs.getInt("sort", 1)
+        val listener = DialogInterface.OnClickListener { dialogInterface, i ->
+            var el = i
+            val prefSort = prefs.getInt("sort", 1)
+            println( "onClick: before i , sort = $i , $prefSort")
+            el += 1
+            if (el == Math.abs(prefSort)) {
+                el = -prefSort
+            }
+            prefs.edit().putInt("sort", el).apply()
+            println("onClick: after el = $el")
+//            redrawFragments()
+            dialogInterface.dismiss()
+        }
+        builder.setTitle(R.string.sort_by)
+        builder.setSingleChoiceItems(mColumns.toTypedArray(), Math.abs(sort) - 1, listener)
+        builder.setPositiveButton(R.string.ok, null)
+        builder.create().show()
+    }
+
+
     companion object {
 
         // TODO: Customize parameter argument names
@@ -125,4 +171,5 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener {
                     }
                 }
     }
+
 }

@@ -1,24 +1,22 @@
 package com.greyogproducts.greyog.fts
 
-import android.support.design.widget.TabLayout
+import android.content.DialogInterface
+import android.os.Bundle
+import android.preference.PreferenceManager
 import android.support.design.widget.Snackbar
-import android.support.v7.app.AppCompatActivity
-
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
-import com.greyogproducts.greyog.fts.dummy.DummyContent
-
+import android.support.v7.app.AlertDialog
+import android.support.v7.app.AppCompatActivity
+import android.util.Log
+import android.view.*
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.auto_update_layout.view.*
 import kotlinx.android.synthetic.main.fragment_main.view.*
+import java.util.*
 
-class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteractionListener{
+class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteractionListener {
     override fun onListFragmentInteraction(item: SummaryListItem?) {
         println("not implemented yet")
     }
@@ -68,11 +66,81 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
         // as you specify a parent activity in AndroidManifest.xml.
         val id = item.itemId
 
-        if (id == R.id.action_settings) {
-            return true
+        when (id) {
+            R.id.action_refresh -> reloadFragments()
+            R.id.action_sort -> showSortDialog()
+            R.id.action_set_auto_update -> showAutoUpdateDialog()
+            R.id.action_about -> showAboutDialog()
         }
 
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun showAutoUpdateDialog() {
+        val builder = AlertDialog.Builder(this)
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val v = layoutInflater.inflate(R.layout.auto_update_layout, null)
+        val sw = v.swAutoUpd
+        sw.isChecked = prefs.getBoolean("auto", false)
+        val ed = v.etAutoUpd
+        ed.setText(prefs.getInt("auto_time", 5).toString())
+        ed.isEnabled = sw.isChecked
+
+        sw.setOnClickListener {
+            ed.isEnabled = sw.isChecked
+        }
+
+        val listener = DialogInterface.OnClickListener { dialogInterface, i ->
+            println("onClick: sw, edt = " + sw.isChecked + ed.text.toString())
+            var time = Integer.parseInt(ed.text.toString())
+            println("onClick: time = $time")
+            if (time <= 0) time = 5
+            prefs.edit().putInt("auto_time", time).putBoolean("auto", sw.isChecked).apply()
+            setUpdTimer()
+        }
+//        builder.setTitle(R.string.action_auto_update);
+        builder.setView(v)
+        builder.setPositiveButton(R.string.ok, listener)
+        builder.create().show()
+    }
+
+    private var mUpdTimer: Timer? = null
+
+    private fun setUpdTimer() {
+        if (mUpdTimer != null) mUpdTimer?.cancel()
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        if (!prefs.getBoolean("auto", false)) return
+        val minutes = prefs.getInt("auto_time", 5)
+        mUpdTimer = Timer("autoUpdTimer")
+        val task = object : TimerTask() {
+            override fun run() {
+                runOnUiThread {
+                    reloadFragments()
+                    println("run: autoUpdTimer, time = $minutes")
+                }
+            }
+        }
+        mUpdTimer?.schedule(task, (minutes * 60 * 1000).toLong(), (minutes * 60000).toLong())
+        println("setUpdTimer: set timer, time = " + minutes * 60000)
+
+    }
+
+    private fun showAboutDialog() {
+        val builder = AlertDialog.Builder(this)
+        val v = layoutInflater.inflate(R.layout.about_layout, null)
+        builder.setTitle(R.string.action_about)
+        builder.setView(v)
+        builder.setPositiveButton(R.string.ok, null)
+        builder.create().show()
+    }
+
+    private fun showSortDialog() {
+        (mSectionsPagerAdapter?.currentFragment as? SummaryFragment)?.showSortDialog()
+
+    }
+
+    private fun reloadFragments() {
+        (mSectionsPagerAdapter?.currentFragment as? SummaryFragment)?.onRefresh()
     }
 
 
@@ -81,6 +149,12 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
      * one of the sections/tabs/pages.
      */
     inner class SectionsPagerAdapter(fm: FragmentManager) : FragmentPagerAdapter(fm) {
+        var currentFragment: Fragment? = null
+
+        override fun setPrimaryItem(container: ViewGroup?, position: Int, `object`: Any?) {
+            if (currentFragment != `object`) currentFragment = `object` as Fragment?
+            super.setPrimaryItem(container, position, `object`)
+        }
 
         override fun getItem(position: Int): Fragment {
             // getItem is called to instantiate the fragment for the given page.
@@ -124,7 +198,7 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
                 val args = Bundle()
                 args.putInt(ARG_SECTION_NUMBER, sectionNumber)
                 val fragment = if (sectionNumber == 0) SummaryFragment.newInstance(3)
-                    else PlaceholderFragment()
+                else PlaceholderFragment()
                 fragment.arguments = args
                 fragments.add(fragment)
                 return fragment
