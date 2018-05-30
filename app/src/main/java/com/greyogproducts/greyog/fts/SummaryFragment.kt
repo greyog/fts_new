@@ -2,6 +2,7 @@ package com.greyogproducts.greyog.fts
 
 import android.content.Context
 import android.content.DialogInterface
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Parcelable
 import android.preference.PreferenceManager
@@ -30,8 +31,13 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefr
 
     private var mColumns = ArrayList<String>()
 
+    private var mItems = ArrayList<SummaryListItem>()
+
+    private lateinit var mPrefs: SharedPreferences
+
     override fun onSummaryResponse(columns: ArrayList<String>, items: ArrayList<SummaryListItem>) {
-        val newAdapter = MyPairRecyclerViewAdapter(items, listener)
+        mItems = items
+        val newAdapter = MyPairRecyclerViewAdapter(mPrefs, mItems, listener)
         activity.runOnUiThread({
             Toast.makeText(context,"Loaded ${items.size} items", Toast.LENGTH_SHORT).show()
             list.adapter = newAdapter
@@ -76,6 +82,7 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefr
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(context)
 
         arguments?.let {
             columnCount = it.getInt(ARG_COLUMN_COUNT)
@@ -135,23 +142,25 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefr
 
     fun showSortDialog() {
         val builder = AlertDialog.Builder(this.context)
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this.context)
-        val sort = prefs.getInt("sort", 1)
+        val sort = mPrefs.getInt("sort", 1)
         val listener = DialogInterface.OnClickListener { dialogInterface, i ->
             var el = i
-            val prefSort = prefs.getInt("sort", 1)
+            val prefSort = mPrefs.getInt("sort", 1)
             println( "onClick: before i , sort = $i , $prefSort")
             el += 1
             if (el == Math.abs(prefSort)) {
                 el = -prefSort
             }
-            prefs.edit().putInt("sort", el).apply()
+            mPrefs.edit().putInt("sort", el).apply()
             println("onClick: after el = $el")
-//            redrawFragments()
+
+            (list.adapter as MyPairRecyclerViewAdapter).sortBy(el)
+
             dialogInterface.dismiss()
         }
         builder.setTitle(R.string.sort_by)
-        builder.setSingleChoiceItems(mColumns.toTypedArray(), Math.abs(sort) - 1, listener)
+        val arr = arrayOf(getString(R.string.sort_by_name)).plus(mColumns.toTypedArray())
+        builder.setSingleChoiceItems(arr, Math.abs(sort) - 1, listener)
         builder.setPositiveButton(R.string.ok, null)
         builder.create().show()
     }

@@ -1,7 +1,10 @@
 package com.greyogproducts.greyog.fts
 
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Color
+import android.preference.PreferenceManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -12,20 +15,26 @@ import com.greyogproducts.greyog.fts.SummaryFragment.OnListFragmentInteractionLi
 import com.greyogproducts.greyog.fts.dummy.DummyContent.DummyItem
 import kotlinx.android.synthetic.main.fragment_pair.view.*
 import kotlinx.android.synthetic.main.simple_text_view.view.*
+import java.util.*
+import kotlin.Comparator
+import kotlin.math.absoluteValue
 
 /**
  * [RecyclerView.Adapter] that can display a [DummyItem] and makes a call to the
  * specified [OnListFragmentInteractionListener].
  * TODO: Replace the implementation with code for your data type.
  */
-class MyPairRecyclerViewAdapter(
-        private val mValues: ArrayList<SummaryListItem>?,
-        private val mListener: OnListFragmentInteractionListener?)
+class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
+                                items: ArrayList<SummaryListItem>?,
+                                private val mListener: OnListFragmentInteractionListener?)
     : RecyclerView.Adapter<MyPairRecyclerViewAdapter.ViewHolder>() {
 
     private var expandedPos = -1
 
     private val mOnClickListener: View.OnClickListener
+    private val sort : Int
+        get() = mPrefs.getInt("sort", 1)
+    private var mValues: List<SummaryListItem>
 
     init {
         mOnClickListener = View.OnClickListener { v ->
@@ -34,6 +43,9 @@ class MyPairRecyclerViewAdapter(
             // one) that an item has been selected.
             mListener?.onListFragmentInteraction(item)
         }
+        mValues = items?.toList() ?: emptyList()
+        sortBy(sort)
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -43,9 +55,9 @@ class MyPairRecyclerViewAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        if (mValues == null) {
-            return
-        }
+//        if (mValues == null) {
+//            return
+//        }
         val item = mValues[position]
         holder.tvPid.text = item.pid
         holder.tvName.text = item.name
@@ -100,7 +112,43 @@ class MyPairRecyclerViewAdapter(
         }
     }
 
-    override fun getItemCount(): Int = mValues?.size ?: 0
+    override fun getItemCount(): Int = mValues.size
+
+    fun sortBy(col: Int) {
+        println("sorted by : $col")
+
+        val sortDir = arrayOf("Strong Buy", "Buy", "Neutral", "Sell", "Strong Sell")
+        fun getSortResult(t1: SummaryListItem, t2: SummaryListItem, field: Int): Int {
+            if (t1.sums.size <= field) return 0
+            val n1 = t1.sums[field-1]
+            val n2 = t2.sums[field-1]
+            val pos1 = sortDir.binarySearch(n1)
+            val pos2 = sortDir.binarySearch(n2)
+            return Math.signum((pos1 - pos2).toFloat()).toInt()
+        }
+
+        val compByNameAsc = Comparator<SummaryListItem>{t1, t2 ->
+            return@Comparator t1.name!!.compareTo(t2.name!!)
+        }
+        val compByNameDesc = Comparator<SummaryListItem>{t1, t2 ->
+            return@Comparator t2.name!!.compareTo(t1.name!!)
+        }
+
+        fun compByCol(col: Int): Comparator<SummaryListItem> {
+            val comp = Comparator<SummaryListItem>{t1, t2 ->
+                return@Comparator getSortResult(t1,t2,col)
+            }
+            return comp
+        }
+        println(mValues)
+        when (col) {
+            0,1 -> mValues.sortedWith(compByNameAsc)
+            -1 -> mValues.sortedWith(compByNameDesc)
+            else -> mValues.sortedWith(compByCol(col))
+        }
+        println(mValues)
+
+    }
 
     inner class ViewHolder(val mView: View) : RecyclerView.ViewHolder(mView) {
         val tvPid: TextView = mView.tvPid
