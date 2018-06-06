@@ -119,13 +119,14 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
         println("sorted by : $col")
 
         val sortDir = arrayOf("Strong Buy", "Buy", "Neutral", "Sell", "Strong Sell")
-        fun getSortResult(t1: SummaryListItem, t2: SummaryListItem, field: Int): Int {
-            if (t1.sums.size <= field) return 0
-            val n1 = t1.sums[field-1]
-            val n2 = t2.sums[field-1]
+        fun getSortResult(t1: SummaryListItem, t2: SummaryListItem, f: Int): Int {
+            val c = f.absoluteValue - 2
+            if (t1.sums.size <= c) return 0
+            val n1 = t1.sums[c]
+            val n2 = t2.sums[c]
             val pos1 = sortDir.binarySearch(n1)
             val pos2 = sortDir.binarySearch(n2)
-            return Math.signum((pos1 - pos2).toFloat()).toInt()
+            return Math.signum((pos1 - pos2).toFloat()).toInt() * f.sign
         }
 //        class MyComparator : Comparator<SummaryListItem> {
 //            override fun compare(p0: SummaryListItem?, p1: SummaryListItem?): Int {
@@ -154,7 +155,8 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
         mValues = when (col) {
             0,1 -> mValues.sortedWith(compareBy { it.name })
             -1 -> mValues.sortedWith(compareByDescending { it.name })
-            else -> mValues.sortedWith(compareBy { it.sums[col.absoluteValue - 2] })
+            else -> mValues.sortedWith(compByCol(col))
+//            else -> mValues.sortedWith(compareBy { it.sums[col.absoluteValue - 2] })
         }
         notifyDataSetChanged()
 //        println(mValues)
