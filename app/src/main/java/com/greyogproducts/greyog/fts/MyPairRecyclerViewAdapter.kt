@@ -18,6 +18,7 @@ import kotlinx.android.synthetic.main.simple_text_view.view.*
 import java.util.*
 import kotlin.Comparator
 import kotlin.math.absoluteValue
+import kotlin.math.sign
 
 /**
  * [RecyclerView.Adapter] that can display a [DummyItem] and makes a call to the
@@ -126,13 +127,22 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
             val pos2 = sortDir.binarySearch(n2)
             return Math.signum((pos1 - pos2).toFloat()).toInt()
         }
-
-        val compByNameAsc = Comparator<SummaryListItem>{t1, t2 ->
-            return@Comparator t1.name!!.compareTo(t2.name!!)
-        }
-        val compByNameDesc = Comparator<SummaryListItem>{t1, t2 ->
-            return@Comparator t2.name!!.compareTo(t1.name!!)
-        }
+//        class MyComparator : Comparator<SummaryListItem> {
+//            override fun compare(p0: SummaryListItem?, p1: SummaryListItem?): Int {
+//                val r = p0?.name!!.compareTo(p1?.name!!)
+//                print(p0.name + " : " + p1.name + " = $r ; ")
+//                return r.sign
+//            }
+//        }
+//
+//        val compByNameAsc = Comparator<SummaryListItem>{t1, t2 ->
+//            return@Comparator t1.name!!.compareTo(t2.name!!)
+//        }
+//        val compByNameDesc = Comparator<SummaryListItem>{t1, t2 ->
+//            val r = t2.name!!.compareTo(t1.name!!)
+//            print(t1.name + " : " + t2.name + " = $r ; ")
+//            return@Comparator r.sign
+//        }
 
         fun compByCol(col: Int): Comparator<SummaryListItem> {
             val comp = Comparator<SummaryListItem>{t1, t2 ->
@@ -140,13 +150,14 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
             }
             return comp
         }
-        println(mValues)
-        when (col) {
-            0,1 -> mValues.sortedWith(compByNameAsc)
-            -1 -> mValues.sortedWith(compByNameDesc)
-            else -> mValues.sortedWith(compByCol(col))
+//        println(mValues)
+        mValues = when (col) {
+            0,1 -> mValues.sortedWith(compareBy { it.name })
+            -1 -> mValues.sortedWith(compareByDescending { it.name })
+            else -> mValues.sortedWith(compareBy { it.sums[col.absoluteValue - 2] })
         }
-        println(mValues)
+        notifyDataSetChanged()
+//        println(mValues)
 
     }
 
