@@ -11,12 +11,22 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.*
+import android.widget.SearchView
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.auto_update_layout.view.*
 import kotlinx.android.synthetic.main.fragment_main.view.*
 import java.util.*
 
-class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteractionListener {
+class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteractionListener, SearchView.OnQueryTextListener {
+    override fun onQueryTextChange(p0: String?): Boolean {
+        RetrofitHelper.instance.doSearchRequest(p0)
+        return false
+    }
+
+    override fun onQueryTextSubmit(p0: String?): Boolean {
+        return false
+    }
+
     override fun onListFragmentInteraction(item: SummaryListItem?) {
         println("not implemented yet")
     }
@@ -50,6 +60,9 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
         }
+
+        val search = findViewById<SearchView>(R.id.app_bar_search)
+        search.setOnQueryTextListener(this)
 
     }
 

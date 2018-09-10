@@ -338,4 +338,20 @@ class RetrofitHelper {
             }
         })
     }
+
+    fun doSearchRequest(text: String?) {
+        if (phpSessId == null) {
+            println("doRequest: no phpSessID found")
+            return
+        }
+        val client = OkHttpClient.Builder()
+                .addInterceptor(SearchResponseInterceptor())
+                .build()
+        val retrofit = Retrofit.Builder()
+                .baseUrl(baseSearchURL)
+                .client(client)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+
+    }
 }

@@ -38,7 +38,7 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefr
     override fun onSummaryResponse(columns: ArrayList<String>, items: ArrayList<SummaryListItem>) {
         mItems = items
         val newAdapter = MyPairRecyclerViewAdapter(mPrefs, mItems, listener)
-        activity.runOnUiThread({
+        activity.runOnUiThread {
             Toast.makeText(context,"Loaded ${items.size} items", Toast.LENGTH_SHORT).show()
             list.adapter = newAdapter
             llColumns.removeAllViews()
@@ -50,7 +50,7 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefr
                 llColumns.addView(view)
             }
             srLayout.isRefreshing = false
-        })
+        }
 
     }
 
