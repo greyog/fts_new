@@ -1,6 +1,5 @@
 package com.greyogproducts.greyog.fts
 
-import android.app.LauncherActivity
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
@@ -33,6 +32,7 @@ class RetrofitHelper {
     internal var stickySess: String? = null
     //    private var preferences: SharedPreferences? = null
     var onResponseListener: OnResponseListener? = null
+    var onSearchResponseListener: OnSearchResponseListener? = null
 
     interface OnResponseListener {
         fun onResponse(responseResult: MyResponseResult?)
@@ -40,6 +40,10 @@ class RetrofitHelper {
         fun onHappySessId()
         fun onBadSessId()
         fun onSummaryResponse(columns: ArrayList<String>, items: ArrayList<SummaryListItem>)
+    }
+
+    interface OnSearchResponseListener {
+        fun onSearchResponse(response: MyResponseResult?)
     }
 
     init {
@@ -339,19 +343,36 @@ class RetrofitHelper {
         })
     }
 
-    fun doSearchRequest(text: String?) {
+    fun doSearchRequest(text: String) {
         if (phpSessId == null) {
             println("doRequest: no phpSessID found")
             return
         }
         val client = OkHttpClient.Builder()
-                .addInterceptor(SearchResponseInterceptor())
+                .addInterceptor(RequestInterceptor(phpSessId,stickySess))
                 .build()
         val retrofit = Retrofit.Builder()
-                .baseUrl(baseSearchURL)
+                .baseUrl(baseURL)
                 .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
+        val server = retrofit.create(Server::class.java)
+        val call = server.searchRequest(text, text, "0", "All")
+        call.enqueue(object : Callback<MyResponseResult> {
+            override fun onResponse(call: Call<MyResponseResult>, response: Response<MyResponseResult>) {
+                if (response.isSuccessful) {
+                    onSearchResponseListener?.onSearchResponse(response.body())
+                }else {
+                    println("onSearchResponse: ${response.message()}")
+                }
+            }
 
+            override fun onFailure(call: Call<MyResponseResult>, t: Throwable) {
+                t.printStackTrace()
+            }
+        })
     }
+
 }
+
+

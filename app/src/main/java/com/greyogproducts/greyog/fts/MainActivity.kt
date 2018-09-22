@@ -9,22 +9,23 @@ import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
+import android.support.v7.widget.SearchView
 import android.view.*
-import android.widget.SearchView
+import android.widget.ArrayAdapter
+import com.greyogproducts.greyog.fts.RetrofitHelper.OnSearchResponseListener
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.auto_update_layout.view.*
 import kotlinx.android.synthetic.main.fragment_main.view.*
 import java.util.*
 
-class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteractionListener, SearchView.OnQueryTextListener {
-    override fun onQueryTextChange(p0: String?): Boolean {
-        RetrofitHelper.instance.doSearchRequest(p0)
-        return false
-    }
-
-    override fun onQueryTextSubmit(p0: String?): Boolean {
-        return false
+class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteractionListener, OnSearchResponseListener {
+    private lateinit var mSearch : SearchView
+    private lateinit var mSearchAutoComplete: SearchView.SearchAutoComplete
+    override fun onSearchResponse(response: MyResponseResult?) {
+        val respList = response?.all?.size?.let { it -> Array(it) {"${response.all[it].pairID} ${response.all[it].name}"} }
+        println("onSearchResponse: $respList")
+        val adapter = ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, respList)
+        mSearchAutoComplete.setAdapter(adapter)
     }
 
     override fun onListFragmentInteraction(item: SummaryListItem?) {
@@ -61,15 +62,30 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
                     .setAction("Action", null).show()
         }
 
-        val search = findViewById<SearchView>(R.id.app_bar_search)
-        search.setOnQueryTextListener(this)
-
     }
 
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
+        mSearch = menu.findItem(R.id.app_bar_search).actionView as SearchView
+        RetrofitHelper.instance.onSearchResponseListener = this
+        mSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                RetrofitHelper.instance.doSearchRequest(newText ?: "")
+
+                return false
+            }
+
+        })
+        mSearchAutoComplete = mSearch.findViewById(android.support.v7.appcompat.R.id.search_src_text)
+//        val menuSI = menu.findItem(R.id.app_bar_search)
+//        search_view.setMenuItem(menuSI)
+
         return true
     }
 
