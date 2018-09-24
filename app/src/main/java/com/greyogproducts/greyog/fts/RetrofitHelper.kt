@@ -106,6 +106,7 @@ class RetrofitHelper {
             raw = raw.replace("""\n""","")
             raw = raw.replace("""\t""","")
             raw = raw.replace("""\""","")
+            println(raw)
             val doc = Jsoup.parse(raw)
             val head = doc.getElementsByTag("thead")
             val cols = ArrayList<String>()
@@ -136,7 +137,8 @@ class RetrofitHelper {
                 for (td in tr.select("td")) {
                     if (td.hasClass("symbol")){
                         val a = td.getElementsByTag("a").first()
-                        lastItem.name = a.text()
+                        lastItem.name = a.attr("title")
+                        lastItem.symbol = a.text()
                         val p = td.getElementsByTag("p").first()
                         lastItem.price = p.text()
                         continue
@@ -150,7 +152,7 @@ class RetrofitHelper {
                 }
             }
             instance.onResponseListener?.onSummaryResponse(cols, itemList)
-//            println(itemList)
+            println(itemList)
             return response
         }
 

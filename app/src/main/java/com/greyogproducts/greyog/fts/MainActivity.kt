@@ -21,11 +21,14 @@ import java.util.*
 
 class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteractionListener, OnSearchResponseListener {
     private lateinit var mSearchAutoComplete: SearchView.SearchAutoComplete
+    @SuppressLint("RestrictedApi")
     override fun onSearchResponse(response: MyResponseResult?) {
         val respList = response?.all?.size?.let { it -> List(it) {"${response.all[it].pairID} ${response.all[it].name}"} }
 //        println("onSearchResponse: ${response}")
         val adptr = respList?.let { SuggestionAdapter(this, it) }
         mSearchAutoComplete.setAdapter(adptr)
+        mSearchAutoComplete.threshold = 1
+
 
     }
 
@@ -66,7 +69,6 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
     }
 
 
-    @SuppressLint("RestrictedApi")
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
@@ -85,7 +87,6 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
 
         })
         mSearchAutoComplete  = mSearch.findViewById(android.support.v7.appcompat.R.id.search_src_text)
-        mSearchAutoComplete.threshold = 1
         mSearchAutoComplete.setOnItemClickListener { adapterView, view, i, l ->
             Toast.makeText(this, mSearchAutoComplete.adapter.getItem(i) as String, Toast.LENGTH_SHORT).show()
 

@@ -1,10 +1,8 @@
 package com.greyogproducts.greyog.fts
 
 
-import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
-import android.preference.PreferenceManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -23,7 +21,6 @@ import kotlin.math.sign
 /**
  * [RecyclerView.Adapter] that can display a [DummyItem] and makes a call to the
  * specified [OnListFragmentInteractionListener].
- * TODO: Replace the implementation with code for your data type.
  */
 class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
                                 items: ArrayList<SummaryListItem>?,
@@ -61,8 +58,9 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
 //        }
         val item = mValues[position]
         holder.tvPid.text = item.pid
-        holder.tvName.text = item.name
+        holder.tvPrice.text = item.price
         holder.tvSymbol.text = item.symbol
+        holder.tvPDesc.text = item.name
 //        if (holder.llSummary.childCount > 0)
             holder.llSummary.removeAllViews()
             for (s in item.sums) {
@@ -165,7 +163,8 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
 
     inner class ViewHolder(val mView: View) : RecyclerView.ViewHolder(mView) {
         val tvPid: TextView = mView.tvPid
-        val tvName: TextView = mView.tvName
+        val tvPDesc: TextView = mView.tvPairDescription
+        val tvPrice: TextView = mView.tvPrice
         val tvSymbol: TextView = mView.tvSymbol
         val llSummary: LinearLayout = mView.llSummary
         val llMa: LinearLayout = mView.llMa
@@ -173,7 +172,7 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
         private val tvSumTit : TextView = mView.tvSummaryTitle
         private val tvMaTit : TextView = mView.tvMaTitle
         private val tvIndTit : TextView = mView.tvIndTitle
-        private val arrExpandables = arrayOf(llInd,llMa,tvIndTit,tvMaTit,tvSumTit)
+        private val expandables = arrayOf(llInd,llMa,tvIndTit,tvMaTit,tvSumTit, tvPDesc)
 
         init {
             mView.tag = this
@@ -181,18 +180,18 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
 
         fun setExpand(isExp : Boolean) {
             if (isExp) {
-                arrExpandables.forEach {
+                expandables.forEach {
                     it.visibility = View.VISIBLE
                 }
             } else {
-                arrExpandables.forEach {
+                expandables.forEach {
                     it.visibility = View.GONE
                 }
             }
         }
 
         override fun toString(): String {
-            return super.toString() + " '" + tvPid.text + " : " + tvName.text + "'"
+            return super.toString() + " '" + tvPid.text + " : " + tvPrice.text + "'"
         }
     }
 }

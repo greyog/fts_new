@@ -19,7 +19,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/text_margin"
-            android:text="id here"
+            android:text=""
+            android:visibility="gone"
             android:textAppearance="?attr/textAppearanceListItem" />
 
         <TextView
@@ -33,20 +34,29 @@
             android:textAppearance="?attr/textAppearanceListItem" />
 
         <TextView
-            android:id="@+id/tvName"
+            android:id="@+id/tvPrice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/text_margin"
             android:layout_toEndOf="@id/tvSymbol"
             android:layout_toRightOf="@id/tvSymbol"
-            android:text="name"
+            android:text="Price"
             android:textAppearance="?attr/textAppearanceListItem" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/tvName"
+            android:layout_below="@id/tvSymbol"
             android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvPairDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="left"
+                android:layout_margin="@dimen/text_margin"
+                android:text="Description"
+                android:visibility="gone"
+                />
 
             <TextView
                 android:id="@+id/tvSummaryTitle"
