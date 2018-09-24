@@ -26,4 +26,7 @@ Greyog App Products, Fusion Media and Investing.com will not accept any liabilit
     <string name="trend_up">Trend up</string>
     <string name="sort_by_name">Name</string>
     <string name="search">Search</string>
+    <array name="list_item_long_menu">
+        <item>Delete</item>
+    </array>
 </resources>

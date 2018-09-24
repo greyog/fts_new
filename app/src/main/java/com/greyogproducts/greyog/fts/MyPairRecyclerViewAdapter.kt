@@ -1,8 +1,11 @@
 package com.greyogproducts.greyog.fts
 
 
+import android.content.Context
+import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.graphics.Color
+import android.support.v7.app.AlertDialog
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -93,6 +96,18 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
                 if (expandedPos == h.adapterPosition) -1 else h.adapterPosition
             } else -1
             notifyItemChanged(expandedPos)
+        }
+
+        holder.mView.setOnLongClickListener {
+//            TODO deletion of item
+            val builder = AlertDialog.Builder(this.mListener as Context)
+            val listener = DialogInterface.OnClickListener { dialogInterface, i ->
+
+                dialogInterface.dismiss()
+            }
+            builder.setItems(R.array.list_item_long_menu, listener)
+            builder.create().show()
+            return@setOnLongClickListener false
         }
 
         if (position == expandedPos) {
