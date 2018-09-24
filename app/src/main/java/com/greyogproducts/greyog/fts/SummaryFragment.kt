@@ -30,7 +30,7 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefr
 
     override fun onRefresh() {
         srLayout.isRefreshing = true
-        RetrofitHelper.instance.doSummaryRequest(null,null)
+        RetrofitHelper.instance.doSummaryRequest()
     }
 
     private var mColumns = ArrayList<String>()
@@ -65,7 +65,7 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefr
     override fun onHappySessId() {
         Toast.makeText(context,"Connection OK", Toast.LENGTH_SHORT).show()
         srLayout.isRefreshing = true
-        RetrofitHelper.instance.doSummaryRequest(null,null)
+        RetrofitHelper.instance.doSummaryRequest()
     }
 
     override fun onResponseTechData(raw: String?) {

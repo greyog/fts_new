@@ -1,5 +1,6 @@
 package com.greyogproducts.greyog.fts
 
+import android.content.SharedPreferences
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
@@ -33,6 +34,7 @@ class RetrofitHelper {
     //    private var preferences: SharedPreferences? = null
     var onResponseListener: OnResponseListener? = null
     var onSearchResponseListener: OnSearchResponseListener? = null
+    lateinit var prefs: SharedPreferences
 
     interface OnResponseListener {
         fun onResponse(responseResult: MyResponseResult?)
@@ -81,9 +83,9 @@ class RetrofitHelper {
         @FormUrlEncoded
         @POST("technical/Service/GetSummaryTable")
         fun getSummaryTable(@Field("tab") tab: String,
-                            @Field("options[periods][]") periods: Array<String>,
+                            @Field("options[periods][]") periods: MutableSet<String>,
                             @Field("options[receive_email]") email: String, // = false
-                            @Field("options[currencies][]") pairs: Array<String>): Call<MyResponseSummaryResult>
+                            @Field("options[currencies][]") pairs: MutableSet<String>): Call<MyResponseSummaryResult>
     }
 
     private class RequestInterceptor(val phpSessId: String?, val stickySess: String?) : Interceptor {
@@ -282,7 +284,7 @@ class RetrofitHelper {
     }
 
 
-    fun doSummaryRequest(pairs: Array<String>?, periods: Array<String>?) {
+    fun doSummaryRequest() {
         if (phpSessId == null) {
             println("doRequest: no phpSessID found")
             return
@@ -300,8 +302,8 @@ class RetrofitHelper {
                 .build()
 
         val server = retrofit.create(Server::class.java)
-        val p = periods ?: arrayOf("300", "900", "3600", "86400")
-        val c = pairs ?: arrayOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "169", "166", "14958", "20", "172", "27", "167", "168", "178", "171", "17940")
+        val p = prefs.getStringSet("periods", mutableSetOf("300", "900", "3600", "86400") )
+        val c = prefs.getStringSet("pairs",mutableSetOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "10"))//, "11", "12", "13", "169", "166", "14958", "20", "172", "27", "167", "168", "178", "171", "17940")
 
         val call = server.getSummaryTable("forex", p, "false", c)
 

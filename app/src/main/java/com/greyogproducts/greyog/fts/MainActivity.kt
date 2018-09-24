@@ -65,6 +65,8 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
         }
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        RetrofitHelper.instance.prefs = prefs
 
     }
 
