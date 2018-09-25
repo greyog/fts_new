@@ -23,11 +23,12 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
     private lateinit var mSearchAutoComplete: SearchView.SearchAutoComplete
     @SuppressLint("RestrictedApi")
     override fun onSearchResponse(response: MyResponseResult?) {
-        val respList = response?.all?.size?.let { it -> List(it) {"${response.all[it].pairID} ${response.all[it].name}"} }
-//        println("onSearchResponse: ${response}")
+        val respList = response?.all?.size?.let { it -> List(it) {"${response.all[it].symbol} - ${response.all[it].transName}"} }
+        println("onSearchResponse: ${response?.all}")
         val adptr = respList?.let { SuggestionAdapter(this, it) }
         mSearchAutoComplete.setAdapter(adptr)
         mSearchAutoComplete.threshold = 1
+        mSearchAutoComplete.showDropDown()
 
 
     }
@@ -90,6 +91,7 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
         })
         mSearchAutoComplete  = mSearch.findViewById(android.support.v7.appcompat.R.id.search_src_text)
         mSearchAutoComplete.setOnItemClickListener { adapterView, view, i, l ->
+//            TODO("add item to request and update")
             Toast.makeText(this, mSearchAutoComplete.adapter.getItem(i) as String, Toast.LENGTH_SHORT).show()
 
         }
