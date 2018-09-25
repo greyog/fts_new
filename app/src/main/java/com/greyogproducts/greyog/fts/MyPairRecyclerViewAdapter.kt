@@ -35,7 +35,7 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
     private val mOnClickListener: View.OnClickListener
     private val sort : Int
         get() = mPrefs.getInt("sort", 1)
-    private var mValues: List<SummaryListItem>
+    private var mValues: MutableList<SummaryListItem>
 
     init {
         mOnClickListener = View.OnClickListener { v ->
@@ -44,7 +44,10 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
             // one) that an item has been selected.
             mListener?.onListFragmentInteraction(item)
         }
-        mValues = items?.toList() ?: emptyList()
+        mValues = MutableList(0){SummaryListItem()}
+        if (items != null) {
+            mValues.addAll(items)
+        }
         sortBy(sort)
 
     }
@@ -98,11 +101,22 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
             notifyItemChanged(expandedPos)
         }
 
-        holder.mView.setOnLongClickListener {
-//            TODO deletion of item
+        holder.mView.setOnLongClickListener { it ->
             val builder = AlertDialog.Builder(this.mListener as Context)
             val listener = DialogInterface.OnClickListener { dialogInterface, i ->
-
+//                println("mValues[i] = "+mValues[i])
+                val h = it.tag as ViewHolder?
+                if (h != null) {
+                    val itemId = h.tvPid.text
+//                    println("itemId = $itemId")
+                    val ind = mValues.indexOfFirst { it.pid == itemId }
+//                    println("mValues[ind] = "+mValues[ind])
+                    mValues.removeAt(ind)
+                    notifyItemRemoved(ind)
+                    val idSet = List(mValues.size){mValues[it].pid}.toMutableSet()
+                    println("idset= $idSet")
+                    mPrefs.edit().putStringSet("pairs", idSet).apply()
+                }
                 dialogInterface.dismiss()
             }
             builder.setItems(R.array.list_item_long_menu, listener)
@@ -129,7 +143,7 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
     override fun getItemCount(): Int = mValues.size
 
     fun sortBy(col: Int) {
-        println("sorted by : $col")
+//        println("sorted by : $col")
 
         val sortDir = arrayOf("Strong Buy", "Buy", "Neutral", "Sell", "Strong Sell")
         fun getSortResult(t1: SummaryListItem, t2: SummaryListItem, f: Int): Int {
@@ -166,9 +180,9 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
         }
 //        println(mValues)
         mValues = when (col) {
-            0,1 -> mValues.sortedWith(compareBy { it.name })
-            -1 -> mValues.sortedWith(compareByDescending { it.name })
-            else -> mValues.sortedWith(compByCol(col))
+            0,1 -> mValues.asSequence().sortedWith(compareBy { it.name }).toMutableList()
+            -1 -> mValues.asSequence().sortedWith(compareByDescending { it.name }).toMutableList()
+            else -> mValues.asSequence().sortedWith(compByCol(col)).toMutableList()
 //            else -> mValues.sortedWith(compareBy { it.sums[col.absoluteValue - 2] })
         }
         notifyDataSetChanged()

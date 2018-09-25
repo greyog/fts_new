@@ -108,7 +108,7 @@ class RetrofitHelper {
             raw = raw.replace("""\n""","")
             raw = raw.replace("""\t""","")
             raw = raw.replace("""\""","")
-            println(raw)
+//            println(raw)
             val doc = Jsoup.parse(raw)
             val head = doc.getElementsByTag("thead")
             val cols = ArrayList<String>()
@@ -154,7 +154,7 @@ class RetrofitHelper {
                 }
             }
             instance.onResponseListener?.onSummaryResponse(cols, itemList)
-            println(itemList)
+//            println(itemList)
             return response
         }
 
@@ -302,9 +302,12 @@ class RetrofitHelper {
                 .build()
 
         val server = retrofit.create(Server::class.java)
-        val p = prefs.getStringSet("periods", mutableSetOf("300", "900", "3600", "86400") )
-        val c = prefs.getStringSet("pairs",mutableSetOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "10"))//, "11", "12", "13", "169", "166", "14958", "20", "172", "27", "167", "168", "178", "171", "17940")
-
+        val defPeriods = mutableSetOf("300", "900", "3600", "86400")
+        val p = prefs.getStringSet("periods", defPeriods )
+        val defPairs = mutableSetOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")
+        val c = prefs.getStringSet("pairs",defPairs)//, "11", "12", "13", "169", "166", "14958", "20", "172", "27", "167", "168", "178", "171", "17940")
+        println("pairs to load: $c")
+        if (c.isEmpty()) c.addAll(defPairs)
         val call = server.getSummaryTable("forex", p, "false", c)
 
         //        call.enqueue(new Callback<ResponseBody>() {
