@@ -2,9 +2,10 @@ package com.greyogproducts.greyog.fts
 
 
 import android.content.Context
+import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.graphics.Color
-import android.preference.PreferenceManager
+import android.support.v7.app.AlertDialog
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -23,7 +24,6 @@ import kotlin.math.sign
 /**
  * [RecyclerView.Adapter] that can display a [DummyItem] and makes a call to the
  * specified [OnListFragmentInteractionListener].
- * TODO: Replace the implementation with code for your data type.
  */
 class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
                                 items: ArrayList<SummaryListItem>?,
@@ -35,7 +35,7 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
     private val mOnClickListener: View.OnClickListener
     private val sort : Int
         get() = mPrefs.getInt("sort", 1)
-    private var mValues: List<SummaryListItem>
+    private var mValues: MutableList<SummaryListItem>
 
     init {
         mOnClickListener = View.OnClickListener { v ->
@@ -44,7 +44,10 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
             // one) that an item has been selected.
             mListener?.onListFragmentInteraction(item)
         }
-        mValues = items?.toList() ?: emptyList()
+        mValues = MutableList(0){SummaryListItem()}
+        if (items != null) {
+            mValues.addAll(items)
+        }
         sortBy(sort)
 
     }
@@ -61,8 +64,9 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
 //        }
         val item = mValues[position]
         holder.tvPid.text = item.pid
-        holder.tvName.text = item.name
+        holder.tvPrice.text = item.price
         holder.tvSymbol.text = item.symbol
+        holder.tvPDesc.text = item.name
 //        if (holder.llSummary.childCount > 0)
             holder.llSummary.removeAllViews()
             for (s in item.sums) {
@@ -97,6 +101,29 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
             notifyItemChanged(expandedPos)
         }
 
+        holder.mView.setOnLongClickListener { it ->
+            val builder = AlertDialog.Builder(this.mListener as Context)
+            val listener = DialogInterface.OnClickListener { dialogInterface, i ->
+//                println("mValues[i] = "+mValues[i])
+                val h = it.tag as ViewHolder?
+                if (h != null) {
+                    val itemId = h.tvPid.text
+//                    println("itemId = $itemId")
+                    val ind = mValues.indexOfFirst { it.pid == itemId }
+//                    println("mValues[ind] = "+mValues[ind])
+                    mValues.removeAt(ind)
+                    notifyItemRemoved(ind)
+                    val idSet = List(mValues.size){mValues[it].pid}.toMutableSet()
+                    println("idset= $idSet")
+                    mPrefs.edit().putStringSet("pairs", idSet).apply()
+                }
+                dialogInterface.dismiss()
+            }
+            builder.setItems(R.array.list_item_long_menu, listener)
+            builder.create().show()
+            return@setOnLongClickListener false
+        }
+
         if (position == expandedPos) {
             holder.setExpand(true)
         }
@@ -116,7 +143,7 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
     override fun getItemCount(): Int = mValues.size
 
     fun sortBy(col: Int) {
-        println("sorted by : $col")
+//        println("sorted by : $col")
 
         val sortDir = arrayOf("Strong Buy", "Buy", "Neutral", "Sell", "Strong Sell")
         fun getSortResult(t1: SummaryListItem, t2: SummaryListItem, f: Int): Int {
@@ -153,9 +180,9 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
         }
 //        println(mValues)
         mValues = when (col) {
-            0,1 -> mValues.sortedWith(compareBy { it.name })
-            -1 -> mValues.sortedWith(compareByDescending { it.name })
-            else -> mValues.sortedWith(compByCol(col))
+            0,1 -> mValues.asSequence().sortedWith(compareBy { it.name }).toMutableList()
+            -1 -> mValues.asSequence().sortedWith(compareByDescending { it.name }).toMutableList()
+            else -> mValues.asSequence().sortedWith(compByCol(col)).toMutableList()
 //            else -> mValues.sortedWith(compareBy { it.sums[col.absoluteValue - 2] })
         }
         notifyDataSetChanged()
@@ -165,7 +192,8 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
 
     inner class ViewHolder(val mView: View) : RecyclerView.ViewHolder(mView) {
         val tvPid: TextView = mView.tvPid
-        val tvName: TextView = mView.tvName
+        val tvPDesc: TextView = mView.tvPairDescription
+        val tvPrice: TextView = mView.tvPrice
         val tvSymbol: TextView = mView.tvSymbol
         val llSummary: LinearLayout = mView.llSummary
         val llMa: LinearLayout = mView.llMa
@@ -173,7 +201,7 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
         private val tvSumTit : TextView = mView.tvSummaryTitle
         private val tvMaTit : TextView = mView.tvMaTitle
         private val tvIndTit : TextView = mView.tvIndTitle
-        private val arrExpandables = arrayOf(llInd,llMa,tvIndTit,tvMaTit,tvSumTit)
+        private val expandables = arrayOf(llInd,llMa,tvIndTit,tvMaTit,tvSumTit, tvPDesc)
 
         init {
             mView.tag = this
@@ -181,18 +209,18 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
 
         fun setExpand(isExp : Boolean) {
             if (isExp) {
-                arrExpandables.forEach {
+                expandables.forEach {
                     it.visibility = View.VISIBLE
                 }
             } else {
-                arrExpandables.forEach {
+                expandables.forEach {
                     it.visibility = View.GONE
                 }
             }
         }
 
         override fun toString(): String {
-            return super.toString() + " '" + tvPid.text + " : " + tvName.text + "'"
+            return super.toString() + " '" + tvPid.text + " : " + tvPrice.text + "'"
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.greyogproducts.greyog.fts
 
-import android.app.LauncherActivity
+import android.content.SharedPreferences
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
@@ -33,6 +33,8 @@ class RetrofitHelper {
     internal var stickySess: String? = null
     //    private var preferences: SharedPreferences? = null
     var onResponseListener: OnResponseListener? = null
+    var onSearchResponseListener: OnSearchResponseListener? = null
+    lateinit var prefs: SharedPreferences
 
     interface OnResponseListener {
         fun onResponse(responseResult: MyResponseResult?)
@@ -40,6 +42,10 @@ class RetrofitHelper {
         fun onHappySessId()
         fun onBadSessId()
         fun onSummaryResponse(columns: ArrayList<String>, items: ArrayList<SummaryListItem>)
+    }
+
+    interface OnSearchResponseListener {
+        fun onSearchResponse(response: MyResponseResult?)
     }
 
     init {
@@ -77,9 +83,9 @@ class RetrofitHelper {
         @FormUrlEncoded
         @POST("technical/Service/GetSummaryTable")
         fun getSummaryTable(@Field("tab") tab: String,
-                            @Field("options[periods][]") periods: Array<String>,
+                            @Field("options[periods][]") periods: MutableSet<String>,
                             @Field("options[receive_email]") email: String, // = false
-                            @Field("options[currencies][]") pairs: Array<String>): Call<MyResponseSummaryResult>
+                            @Field("options[currencies][]") pairs: MutableSet<String>): Call<MyResponseSummaryResult>
     }
 
     private class RequestInterceptor(val phpSessId: String?, val stickySess: String?) : Interceptor {
@@ -102,6 +108,7 @@ class RetrofitHelper {
             raw = raw.replace("""\n""","")
             raw = raw.replace("""\t""","")
             raw = raw.replace("""\""","")
+//            println(raw)
             val doc = Jsoup.parse(raw)
             val head = doc.getElementsByTag("thead")
             val cols = ArrayList<String>()
@@ -132,7 +139,8 @@ class RetrofitHelper {
                 for (td in tr.select("td")) {
                     if (td.hasClass("symbol")){
                         val a = td.getElementsByTag("a").first()
-                        lastItem.name = a.text()
+                        lastItem.name = a.attr("title")
+                        lastItem.symbol = a.text()
                         val p = td.getElementsByTag("p").first()
                         lastItem.price = p.text()
                         continue
@@ -276,7 +284,7 @@ class RetrofitHelper {
     }
 
 
-    fun doSummaryRequest(pairs: Array<String>?, periods: Array<String>?) {
+    fun doSummaryRequest() {
         if (phpSessId == null) {
             println("doRequest: no phpSessID found")
             return
@@ -294,9 +302,12 @@ class RetrofitHelper {
                 .build()
 
         val server = retrofit.create(Server::class.java)
-        val p = periods ?: arrayOf("300", "900", "3600", "86400")
-        val c = pairs ?: arrayOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "169", "166", "14958", "20", "172", "27", "167", "168", "178", "171", "17940")
-
+        val defPeriods = mutableSetOf("300", "900", "3600", "86400")
+        val p = prefs.getStringSet("periods", defPeriods )
+        val defPairs = mutableSetOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")
+        val c = prefs.getStringSet("pairs",defPairs)//, "11", "12", "13", "169", "166", "14958", "20", "172", "27", "167", "168", "178", "171", "17940")
+        println("pairs to load: $c")
+        if (c.isEmpty()) c.addAll(defPairs)
         val call = server.getSummaryTable("forex", p, "false", c)
 
         //        call.enqueue(new Callback<ResponseBody>() {
@@ -338,4 +349,37 @@ class RetrofitHelper {
             }
         })
     }
+
+    fun doSearchRequest(text: String) {
+        if (phpSessId == null) {
+            println("doRequest: no phpSessID found")
+            return
+        }
+        val client = OkHttpClient.Builder()
+                .addInterceptor(RequestInterceptor(phpSessId,stickySess))
+                .build()
+        val retrofit = Retrofit.Builder()
+                .baseUrl(baseURL)
+                .client(client)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+        val server = retrofit.create(Server::class.java)
+        val call = server.searchRequest(text, text, "0", "All")
+        call.enqueue(object : Callback<MyResponseResult> {
+            override fun onResponse(call: Call<MyResponseResult>, response: Response<MyResponseResult>) {
+                if (response.isSuccessful) {
+                    onSearchResponseListener?.onSearchResponse(response.body())
+                }else {
+                    println("onSearchResponse: ${response.message()}")
+                }
+            }
+
+            override fun onFailure(call: Call<MyResponseResult>, t: Throwable) {
+                t.printStackTrace()
+            }
+        })
+    }
+
 }
+
+

@@ -1,5 +1,6 @@
 package com.greyogproducts.greyog.fts
 
+import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.os.Bundle
 import android.preference.PreferenceManager
@@ -9,14 +10,29 @@ import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
+import android.support.v7.widget.SearchView
 import android.view.*
+import android.widget.Toast
+import com.greyogproducts.greyog.fts.RetrofitHelper.OnSearchResponseListener
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.auto_update_layout.view.*
 import kotlinx.android.synthetic.main.fragment_main.view.*
 import java.util.*
 
-class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteractionListener {
+class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteractionListener, OnSearchResponseListener {
+    private lateinit var mSearchAutoComplete: SearchView.SearchAutoComplete
+    @SuppressLint("RestrictedApi")
+    override fun onSearchResponse(response: MyResponseResult?) {
+        val respList = response?.all?.size?.let { it -> List(it) {"${response.all[it].symbol} - ${response.all[it].transName}"} }
+        println("onSearchResponse: ${response?.all}")
+        val adptr = respList?.let { SuggestionAdapter(this, it) }
+        mSearchAutoComplete.setAdapter(adptr)
+        mSearchAutoComplete.threshold = 1
+        mSearchAutoComplete.showDropDown()
+
+
+    }
+
     override fun onListFragmentInteraction(item: SummaryListItem?) {
         println("not implemented yet")
     }
@@ -50,6 +66,8 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
         }
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        RetrofitHelper.instance.prefs = prefs
 
     }
 
@@ -57,6 +75,27 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
+        val mSearch = menu.findItem(R.id.app_bar_search).actionView as SearchView
+        RetrofitHelper.instance.onSearchResponseListener = this
+        mSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                RetrofitHelper.instance.doSearchRequest(newText ?: "")
+
+                return false
+            }
+
+        })
+        mSearchAutoComplete  = mSearch.findViewById(android.support.v7.appcompat.R.id.search_src_text)
+        mSearchAutoComplete.setOnItemClickListener { adapterView, view, i, l ->
+//            TODO("add item to request and update")
+            Toast.makeText(this, mSearchAutoComplete.adapter.getItem(i) as String, Toast.LENGTH_SHORT).show()
+
+        }
+
         return true
     }
 
@@ -127,9 +166,9 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
 
     private fun showAboutDialog() {
         val builder = AlertDialog.Builder(this)
-        val v = layoutInflater.inflate(R.layout.about_layout, null)
+//        val v = layoutInflater.inflate(R.layout.about_layout, null)
         builder.setTitle(R.string.action_about)
-        builder.setView(v)
+        builder.setView(R.layout.about_layout)
         builder.setPositiveButton(R.string.ok, null)
         builder.create().show()
     }

@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.os.Parcelable
 import android.preference.PreferenceManager
 import android.support.v4.app.Fragment
 import android.support.v4.widget.SwipeRefreshLayout
@@ -24,9 +23,14 @@ import kotlinx.android.synthetic.main.simple_text_view.view.*
  * [SummaryFragment.OnListFragmentInteractionListener] interface.
  */
 class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefreshLayout.OnRefreshListener {
+//    override fun onSearchResponse(response: MyResponseResult?) {
+//        println("onSearchResponse: response = $response")
+//        searchAdapter.setNewData(response)
+//    }
+
     override fun onRefresh() {
         srLayout.isRefreshing = true
-        RetrofitHelper.instance.doSummaryRequest(null,null)
+        RetrofitHelper.instance.doSummaryRequest()
     }
 
     private var mColumns = ArrayList<String>()
@@ -38,7 +42,7 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefr
     override fun onSummaryResponse(columns: ArrayList<String>, items: ArrayList<SummaryListItem>) {
         mItems = items
         val newAdapter = MyPairRecyclerViewAdapter(mPrefs, mItems, listener)
-        activity.runOnUiThread({
+        activity.runOnUiThread {
             Toast.makeText(context,"Loaded ${items.size} items", Toast.LENGTH_SHORT).show()
             list.adapter = newAdapter
             llColumns.removeAllViews()
@@ -50,7 +54,7 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefr
                 llColumns.addView(view)
             }
             srLayout.isRefreshing = false
-        })
+        }
 
     }
 
@@ -61,7 +65,7 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefr
     override fun onHappySessId() {
         Toast.makeText(context,"Connection OK", Toast.LENGTH_SHORT).show()
         srLayout.isRefreshing = true
-        RetrofitHelper.instance.doSummaryRequest(null,null)
+        RetrofitHelper.instance.doSummaryRequest()
     }
 
     override fun onResponseTechData(raw: String?) {
@@ -95,16 +99,9 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefr
         srLayout = view.swipeContainer
         srLayout.setOnRefreshListener(this)
         llColumns = view.llColumns
-        // Set the adapter
-//        if (view is RecyclerView) {
-//            with(view) {
-//                layoutManager = when {
-//                    columnCount <= 1 -> LinearLayoutManager(context)
-//                    else -> GridLayoutManager(context, columnCount)
-//                }
-//                adapter = MyPairRecyclerViewAdapter(null, listener)
-//            }
-//        }
+//        searchAdapter = SearchListViewAdapter(this.context,null)
+//        view.lvSearch.adapter = searchAdapter
+
 
         RetrofitHelper.instance.onResponseListener = this
         return view
@@ -167,11 +164,8 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefr
 
 
     companion object {
-
-        // TODO: Customize parameter argument names
         const val ARG_COLUMN_COUNT = "column-count"
 
-        // TODO: Customize parameter initialization
         @JvmStatic
         fun newInstance(columnCount: Int) =
                 SummaryFragment().apply {
