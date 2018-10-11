@@ -38,7 +38,7 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.11.2'
     implementation 'pl.droidsonroids:jspoon:1.0.0'
     implementation 'pl.droidsonroids.retrofit2:converter-jspoon:1.0.0'
-    implementation 'com.miguelcatalan:materialsearchview:1.4.0'
+//    implementation 'com.miguelcatalan:materialsearchview:1.4.0'
 //    testImplementation 'junit:junit:4.12'
 //    androidTestImplementation 'com.android.support.test:runner:1.0.2'
 //    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'

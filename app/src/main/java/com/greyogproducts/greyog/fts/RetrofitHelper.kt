@@ -302,7 +302,7 @@ class RetrofitHelper {
                 .build()
 
         val server = retrofit.create(Server::class.java)
-        val defPeriods = mutableSetOf("300", "900", "3600", "86400")
+        val defPeriods = mutableSetOf("300", "900",  "3600" ,"18000","86400", "week", "month")
         val p = prefs.getStringSet("periods", defPeriods )
         val defPairs = mutableSetOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")
         val c = prefs.getStringSet("pairs",defPairs)//, "11", "12", "13", "169", "166", "14958", "20", "172", "27", "167", "168", "178", "171", "17940")

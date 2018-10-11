@@ -16,6 +16,7 @@ import android.widget.Toast
 import kotlinx.android.synthetic.main.fragment_pair_list.*
 import kotlinx.android.synthetic.main.fragment_pair_list.view.*
 import kotlinx.android.synthetic.main.simple_text_view.view.*
+import java.sql.Timestamp
 
 /**
  * A fragment representing a list of Items.
@@ -23,6 +24,7 @@ import kotlinx.android.synthetic.main.simple_text_view.view.*
  * [SummaryFragment.OnListFragmentInteractionListener] interface.
  */
 class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefreshLayout.OnRefreshListener {
+
 //    override fun onSearchResponse(response: MyResponseResult?) {
 //        println("onSearchResponse: response = $response")
 //        searchAdapter.setNewData(response)
@@ -54,6 +56,14 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefr
                 llColumns.addView(view)
             }
             srLayout.isRefreshing = false
+            (activity as MainActivity).supportActionBar?.also {
+                it.title = getString(R.string.last_update)
+                it.subtitle = Timestamp(System.currentTimeMillis()).toString()
+            }
+//            (activity as MainActivity).supportActionBar?.customView = activity.layoutInflater.inflate(R.layout.action_bar_layout, null)
+//            (activity as MainActivity).supportActionBar?.customView?.findViewById<TextView>(R.id.tv_timestamp).also {
+//                it?.text = Timestamp(System.currentTimeMillis()).toString()
+//            }
         }
 
     }
