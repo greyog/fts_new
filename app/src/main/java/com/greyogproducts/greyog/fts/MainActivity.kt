@@ -23,9 +23,10 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
     private lateinit var mSearchAutoComplete: SearchView.SearchAutoComplete
     @SuppressLint("RestrictedApi")
     override fun onSearchResponse(response: MyResponseResult?) {
-        val respList = response?.all?.size?.let { it -> List(it) {"${response.all[it].symbol} - ${response.all[it].transName}"} }
-        println("onSearchResponse: ${response?.all}")
-        val adptr = respList?.let { SuggestionAdapter(this, it) }
+//        val respList = response?.all?.size?.let { it -> List(it) {"${response.all[it].symbol} - ${response.all[it].transName}"} }
+//        println("onSearchResponse: ${response?.all}")
+//        val adptr = respList?.let { SuggestionAdapter(this, it) }
+        val adptr = response?.all?.let { SuggestionAdapter(this, it) }
         mSearchAutoComplete.setAdapter(adptr)
         mSearchAutoComplete.threshold = 1
         mSearchAutoComplete.showDropDown()
@@ -46,6 +47,11 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
      * [android.support.v4.app.FragmentStatePagerAdapter].
      */
     private var mSectionsPagerAdapter: SectionsPagerAdapter? = null
+
+    override fun onResume() {
+        super.onResume()
+        RetrofitHelper.instance.doSummaryRequest()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,9 +97,23 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
         })
         mSearchAutoComplete  = mSearch.findViewById(android.support.v7.appcompat.R.id.search_src_text)
         mSearchAutoComplete.setOnItemClickListener { adapterView, view, i, l ->
-//            TODO("add item to request and update")
-            Toast.makeText(this, mSearchAutoComplete.adapter.getItem(i) as String, Toast.LENGTH_SHORT).show()
-
+//            Toast.makeText(this, (mSearchAutoComplete.adapter as SuggestionAdapter).getItemPairId(position = i), Toast.LENGTH_SHORT).show()
+            val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+            val idSet = prefs.getStringSet("pairs", emptySet())
+            val itemId = (mSearchAutoComplete.adapter as SuggestionAdapter).getItemPairId(i)
+            val itemName = (mSearchAutoComplete.adapter as SuggestionAdapter).getItem(i)
+            if (idSet.contains(itemId)) {
+                Toast.makeText(this, "Already exists.", Toast.LENGTH_SHORT).show()
+                mSearchAutoComplete.showDropDown()
+            } else if (idSet.size >= 20)
+                Toast.makeText(this, "Too many elements! Delete something before add.", Toast.LENGTH_SHORT).show()
+            else {
+                idSet.plusAssign(itemId)
+                prefs.edit().putStringSet("pairs",idSet).apply()
+                Toast.makeText(this, "Added element $itemName to list.", Toast.LENGTH_SHORT).show()
+                mSearchAutoComplete.showDropDown()
+                RetrofitHelper.instance.doSummaryRequest()
+            }
         }
 
         return true

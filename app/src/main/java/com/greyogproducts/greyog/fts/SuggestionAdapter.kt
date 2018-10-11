@@ -4,21 +4,26 @@ import android.widget.ArrayAdapter
 import android.widget.Filter
 
 
-class SuggestionAdapter<T>(context: Context, private val items: List<T>)
-    : ArrayAdapter<T>(context,  android.R.layout.simple_dropdown_item_1line) {
-    private var filteredItems: List<T>? = null
+class SuggestionAdapter(context: Context, private val items: List<All>)
+    : ArrayAdapter<String>(context,  android.R.layout.simple_dropdown_item_1line) {
+    private var filteredItems: List<String>? = null
     private var mFilter: ArrayFilter? = null
+    private var strItems: List<String> = List(items.size) {"${items[it].symbol} - ${items[it].name}"}
 
     init {
-        addAll(items)
-
+        addAll(strItems)
     }
+
+    fun getItemPairId(position: Int): String {
+        return items[position].pairID.toString()
+    }
+
     override fun getItemId(position: Int): Long {
         return position.toLong()
     }
 
-    override fun getItem(position: Int): T? {
-        return items[position]
+    override fun getItem(position: Int): String? {
+        return strItems[position]
     }
 
     override fun getFilter(): Filter {
@@ -38,7 +43,7 @@ class SuggestionAdapter<T>(context: Context, private val items: List<T>)
             if (results == null) {
                 return
             }
-            filteredItems = results.values as List<T>?
+            filteredItems = results.values as List<String>?
             if (results.count > 0) notifyDataSetChanged()
             else notifyDataSetInvalidated()
         }
