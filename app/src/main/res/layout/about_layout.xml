@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <ScrollView
+    <TextView
+        android:id="@+id/textView5"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scrollbars="vertical">
+        android:layout_height="wrap_content"
+        android:isScrollContainer="true"
+        android:padding="@dimen/appbar_padding_top"
+        android:text="@string/disclaimer" />
 
-        <TextView
-            android:id="@+id/textView5"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:isScrollContainer="true"
-            android:padding="@dimen/appbar_padding_top"
-            android:text="@string/disclaimer" />
-    </ScrollView>
+    <TextView
+        android:id="@+id/tv_policy"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:isScrollContainer="true"
+        android:padding="@dimen/appbar_padding_top"
+        android:autoLink="web"
+        android:text="@string/policy" />
 
 </LinearLayout>

@@ -3,6 +3,7 @@ package com.greyogproducts.greyog.fts
 
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.support.v7.app.AlertDialog
@@ -109,13 +110,25 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
                 if (h != null) {
                     val itemId = h.tvPid.text
 //                    println("itemId = $itemId")
-                    val ind = mValues.indexOfFirst { it.pid == itemId }
+                    when (i) {
+                        1 -> { //delete action
+                            val ind = mValues.indexOfFirst { it.pid == itemId }
 //                    println("mValues[ind] = "+mValues[ind])
-                    mValues.removeAt(ind)
-                    notifyItemRemoved(ind)
-                    val idSet = List(mValues.size){mValues[it].pid}.toMutableSet()
-                    println("idset= $idSet")
-                    mPrefs.edit().putStringSet("pairs", idSet).apply()
+                            mValues.removeAt(ind)
+                            notifyItemRemoved(ind)
+                            val idSet = List(mValues.size) { mValues[it].pid }.toMutableSet()
+                            println("idset= $idSet")
+                            mPrefs.edit().putStringSet("pairs", idSet).apply()
+                        }
+                        0 -> { //view details action
+                            val itemName = h.tvPDesc.text
+                            val intent = Intent(mListener as Context, DetailsActivity::class.java)
+                            intent.putExtra("pair", itemId)
+                            intent.putExtra("name", itemName)
+                            (mListener as Context).startActivity(intent)
+                        }
+                    }
+
                 }
                 dialogInterface.dismiss()
             }

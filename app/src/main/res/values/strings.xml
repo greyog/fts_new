@@ -16,9 +16,10 @@
     <string name="set_auto_update_time">Interval in minutes</string>
     <string name="empty" />
     <string name="last_upd">Last update on:</string>
-    <string name="action_about">Disclaimer</string>
+    <string name="action_about">Disclaimer/Policy</string>
     <string name="disclaimer">Disclaimer:
-Greyog App Products, Fusion Media and Investing.com will not accept any liability for loss or damage as a result of reliance on the information contained within this tool including data, quotes, charts and buy/sell signals. Please be fully informed regarding the risks and costs associated with trading the financial markets, it is one of the riskiest investment forms possible. Currency trading on margin involves high risk, and is not suitable for all investors. Before deciding to trade foreign exchange or any other financial instrument you should carefully consider your investment objectives, level of experience, and risk appetite.</string>
+Greyog App Products, Fusion Media and Investing.com will not accept any liability for loss or damage as a result of reliance on the information contained within this tool including data, quotes, charts and buy/sell signals. Please be fully informed regarding the risks and costs associated with trading the financial markets, it is one of the riskiest investment forms possible. Currency trading on margin involves high risk, and is not suitable for all investors. Before deciding to trade foreign exchange or any other financial instrument you should carefully consider your investment objectives, level of experience, and risk appetite.
+    </string>
     <string name="strong_up">Strong trend up</string>
     <string name="neutral">No trend</string>
     <string name="strong_down">Strong trend down</string>
@@ -27,7 +28,17 @@ Greyog App Products, Fusion Media and Investing.com will not accept any liabilit
     <string name="sort_by_name">Name</string>
     <string name="search">Search</string>
     <string name="last_update">Last update</string>
+    <string name="share">Share</string>
+    <string name="share_title">Share</string>
+    <string name="policy">Privacy policy:\n
+        https://www.appodeal.com/privacy-policy</string>
+    <string name="banner_ad_unit_id">ca-app-pub-7481139450301121/3991868493</string>
     <array name="list_item_long_menu">
+        <item>View details</item>
         <item>Delete</item>
     </array>
+    <string name="title_activity_tabs">TabsActivity</string>
+    <string name="tab_text_1">Tab 1</string>
+    <string name="tab_text_2">Tab 2</string>
+    <string name="tab_text_3">Tab 3</string>
 </resources>

@@ -78,10 +78,6 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefr
         RetrofitHelper.instance.doSummaryRequest()
     }
 
-    override fun onResponseTechData(raw: String?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
     override fun onResponse(responseResult: MyResponseResult?) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }

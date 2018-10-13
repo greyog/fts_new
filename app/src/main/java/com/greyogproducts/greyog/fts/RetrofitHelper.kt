@@ -33,12 +33,16 @@ class RetrofitHelper {
     internal var stickySess: String? = null
     //    private var preferences: SharedPreferences? = null
     var onResponseListener: OnResponseListener? = null
+    var onResponsePairDataListener: OnResponsePairDataListener? = null
     var onSearchResponseListener: OnSearchResponseListener? = null
     lateinit var prefs: SharedPreferences
 
+    interface OnResponsePairDataListener {
+        fun onResponseTechData(period: String, raw: String)
+    }
+
     interface OnResponseListener {
         fun onResponse(responseResult: MyResponseResult?)
-        fun onResponseTechData(raw: String?)
         fun onHappySessId()
         fun onBadSessId()
         fun onSummaryResponse(columns: ArrayList<String>, items: ArrayList<SummaryListItem>)
@@ -75,9 +79,9 @@ class RetrofitHelper {
         @Headers("Host: www.investing.com", "Connection: keep-alive", "Content-Length: 44", "Cache-Control: max-age=0", "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36", "Upgrade-Insecure-Requests: 1", "Accept: application/json, text/javascript, */*; q=0.01", "Origin: https://www.investing.com", "X-Requested-With: XMLHttpRequest", "Content-Type: application/x-www-form-urlencoded", "Referer: https://www.investing.com/technical/technical-summary", "Accept-Language: en-GB,en-US;q=0.9,en;q=0.8")
         @FormUrlEncoded
         @POST("instruments/Service/GetTechincalData")
-        fun getPairData(@Field("pairID") pairId: String,
-                        @Field("period") period: String,
-                        @Field("viewType") viewType: String): Call<ResponseBody>  // = normal
+        fun getSinglePairData(@Field("pairID") pairId: String,
+                              @Field("period") period: String,
+                              @Field("viewType") viewType: String): Call<ResponseBody>  // = normal
 
         @Headers("Host: www.investing.com", "Connection: keep-alive", "Accept: application/json, text/javascript, */*; q=0.01", "Origin: https://www.investing.com", "X-Requested-With: XMLHttpRequest", "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36", "Content-Type: application/x-www-form-urlencoded", "Referer: https://www.investing.com/technical/technical-summary", "Accept-Language: en-GB,en-US;q=0.9,en;q=0.8")
         @FormUrlEncoded
@@ -241,7 +245,8 @@ class RetrofitHelper {
         })
     }
 
-    fun doPairRequest(pairId: String) {
+    fun doSinglePairRequest(pairId: String, period: String) {
+        println("doSinglePairRequest: pair= $pairId, period= $period")
         if (phpSessId == null) {
             println("doRequest: no phpSessID found")
             return
@@ -258,17 +263,17 @@ class RetrofitHelper {
 
         val server = retrofit.create(Server::class.java)
 
-        val call = server.getPairData(pairId, "300", "normal")
+        val call = server.getSinglePairData(pairId, period, "json")
 
 
         call.enqueue(object : Callback<ResponseBody>{
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                if (!response.isSuccessful()) {
+                if (!response.isSuccessful) {
                     println("onResponse: " + response.message())
                 } else {
-                    println("onResponseTechData: ok " + response.headers().values("Set-Cookie"))
+//                    println("onResponseTechData: ok " + response.headers().values("Set-Cookie"))
                     try {
-                        onResponseListener?.onResponseTechData(response.body()!!.string())
+                        onResponsePairDataListener?.onResponseTechData(period, response.body()!!.string())
                         //                        println("onResponse: ok "+ response.body().string());
                     } catch (e: IOException) {
                         e.printStackTrace()
@@ -305,6 +310,8 @@ class RetrofitHelper {
         val defPeriods = mutableSetOf("300", "900",  "3600" ,"18000","86400", "week", "month")
         val p = prefs.getStringSet("periods", defPeriods )
         val defPairs = mutableSetOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")
+        if (!prefs.contains("pairs"))
+            prefs.edit().putStringSet("pairs", defPairs).apply()
         val c = prefs.getStringSet("pairs",defPairs)//, "11", "12", "13", "169", "166", "14958", "20", "172", "27", "167", "168", "178", "171", "17940")
         println("pairs to load: $c")
         if (c.isEmpty()) c.addAll(defPairs)

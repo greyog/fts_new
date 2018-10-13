@@ -4,15 +4,18 @@ import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.SearchView
+import android.support.v7.widget.ShareActionProvider
 import android.view.*
 import android.widget.Toast
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.InterstitialAd
 import com.greyogproducts.greyog.fts.RetrofitHelper.OnSearchResponseListener
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.auto_update_layout.view.*
@@ -53,11 +56,14 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
         RetrofitHelper.instance.doSummaryRequest()
     }
 
+    private lateinit var mAdView: AdView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         setSupportActionBar(toolbar)
+        loadAds()
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = SectionsPagerAdapter(supportFragmentManager)
@@ -69,14 +75,34 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
 //        tabs.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(container))
 
         fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
+            showInterstitial()
         }
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         RetrofitHelper.instance.prefs = prefs
 
     }
 
+    private fun showInterstitial() {
+        if (mInterstitialAd.isLoaded && Math.random() > 0.7)
+            mInterstitialAd.show()
+        else
+            println("No interstitial")
+    }
+
+    private lateinit var mInterstitialAd: InterstitialAd
+
+    private fun loadAds() {
+        mAdView = findViewById(R.id.adView)
+        val adRequest = AdRequest.Builder().build()
+        mAdView.loadAd(adRequest)
+
+        mInterstitialAd = InterstitialAd(this)
+        mInterstitialAd.adUnitId = "ca-app-pub-7481139450301121/4167406890"
+        mInterstitialAd.loadAd(AdRequest.Builder().build())
+    }
+
+
+    private var mShareActionProvider: ShareActionProvider? = null
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -99,7 +125,8 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
         mSearchAutoComplete.setOnItemClickListener { adapterView, view, i, l ->
 //            Toast.makeText(this, (mSearchAutoComplete.adapter as SuggestionAdapter).getItemPairId(position = i), Toast.LENGTH_SHORT).show()
             val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-            val idSet = prefs.getStringSet("pairs", emptySet())
+            val emptSet = emptySet<String>().toMutableSet()
+            val idSet = prefs.getStringSet("pairs", emptSet)
             val itemId = (mSearchAutoComplete.adapter as SuggestionAdapter).getItemPairId(i)
             val itemName = (mSearchAutoComplete.adapter as SuggestionAdapter).getItem(i)
             if (idSet.contains(itemId)) {
@@ -109,15 +136,61 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
                 Toast.makeText(this, "Too many elements! Delete something before add.", Toast.LENGTH_SHORT).show()
             else {
                 idSet.plusAssign(itemId)
-                prefs.edit().putStringSet("pairs",idSet).apply()
+                val newSet = setOf<String>().toMutableSet()
+                newSet.addAll(idSet)
+                prefs.edit().remove("pairs").apply()
+                prefs.edit().putStringSet("pairs",newSet).apply()
+                println("saved $idSet")
                 Toast.makeText(this, "Added element $itemName to list.", Toast.LENGTH_SHORT).show()
                 mSearchAutoComplete.showDropDown()
                 RetrofitHelper.instance.doSummaryRequest()
             }
         }
+//        menu.findItem(R.id.menu_item_share).also {
+//            mShareActionProvider = MenuItemCompat.getActionProvider(it) as? ShareActionProvider
+//            it.setOnMenuItemClickListener {mi ->
+//                val bitmap = takeScreenshot()
+//                saveBitmap(bitmap)
+//                shareIt()
+//                return@setOnMenuItemClickListener true
+//            }
+//        }
 
         return true
     }
+
+//    private fun shareIt() {
+//        val uri = Uri.fromFile(File(imgPath))
+//        val sharingIntent = Intent().apply {
+//            action = Intent.ACTION_SEND
+//            putExtra(Intent.EXTRA_STREAM, uri)
+//            type = "image/jpeg"
+//        }
+//        startActivity(Intent.createChooser(sharingIntent, getString(R.string.share_title)))
+//    }
+//
+//    private lateinit var imgPath: String
+//
+//    private fun saveBitmap(bitmap: Bitmap) {
+//        imgPath = Environment.getExternalStorageDirectory().absolutePath + "/screenshot.png"
+//        try {
+//            val fos = FileOutputStream(imgPath)
+//            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+//            fos.flush()
+//            fos.close()
+//        } catch (e: FileNotFoundException) {
+//            println(e.message)
+//        } catch (e : IOException) {
+//            println(e.message)
+//        }
+//    }
+//
+//    private fun takeScreenshot(): Bitmap {
+//        val rootView = findViewById<View>(android.R.id.content)
+//        rootView.isDrawingCacheEnabled = true
+//        return rootView.drawingCache
+//    }
+
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle action bar item clicks here. The action bar will
@@ -156,6 +229,7 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
             if (time <= 0) time = 5
             prefs.edit().putInt("auto_time", time).putBoolean("auto", sw.isChecked).apply()
             setUpdTimer()
+            showInterstitial()
         }
 //        builder.setTitle(R.string.action_auto_update);
         builder.setView(v)
@@ -184,22 +258,28 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
 
     }
 
+
     private fun showAboutDialog() {
         val builder = AlertDialog.Builder(this)
 //        val v = layoutInflater.inflate(R.layout.about_layout, null)
         builder.setTitle(R.string.action_about)
         builder.setView(R.layout.about_layout)
-        builder.setPositiveButton(R.string.ok, null)
+        val listener = DialogInterface.OnClickListener { dialogInterface, i ->
+            showInterstitial()
+        }
+        builder.setPositiveButton(R.string.ok, listener)
         builder.create().show()
     }
 
     private fun showSortDialog() {
         (mSectionsPagerAdapter?.currentFragment as? SummaryFragment)?.showSortDialog()
+        showInterstitial()
 
     }
 
     private fun reloadFragments() {
         (mSectionsPagerAdapter?.currentFragment as? SummaryFragment)?.onRefresh()
+        showInterstitial()
     }
 
 
