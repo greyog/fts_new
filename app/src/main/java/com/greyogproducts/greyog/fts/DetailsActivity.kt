@@ -1,5 +1,7 @@
 package com.greyogproducts.greyog.fts
 
+import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.design.widget.TabLayout
@@ -11,9 +13,15 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.TableLayout
+import android.widget.TableRow
+import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_tabs.*
-import kotlinx.android.synthetic.main.fragment_tabs.view.*
+import kotlinx.android.synthetic.main.fragment_tabs.*
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
 import java.sql.Timestamp
 
 class DetailsActivity : AppCompatActivity() {
@@ -124,11 +132,99 @@ class DetailsActivity : AppCompatActivity() {
      */
     class PlaceholderFragment : Fragment() {
         fun setTechData(txt: String?) {
-//            section_label.text = txt
-//            println("onResponseTechData to section = $secNum, pair = $pair, period = ${periods[secNum!!]}")
             val doc = Jsoup.parse(txt)
-            println(doc.getElementById("techStudiesInnerWrap").toString())
+            val summaryElement = doc.getElementById("techStudiesInnerWrap")
+            val sumStr = summaryElement.selectFirst(".summary")
+            val tl0 = newTableLayout()
+            val tr0 = newTableRow(tl0)
+            newTextView(sumStr, tr0, true)
+            newTextView(sumStr.children().first(), tr0)
+            val stls = summaryElement.getElementsByClass("summaryTableLine")
+            val tl1 = newTableLayout()
+            stls.forEach {stl ->
+                val tr1 = newTableRow(tl1)
+                stl.children().forEach {
+                    val tv = newTextView(it, tr1)
+                }
+            }
+            makeDataTable(doc, "pivot-points", ".crossRatesTbl" )
+            makeDataTable(doc, "indicators", ".technicalIndicatorsTbl" )
+            makeDataTable(doc, "moving-averages", ".movingAvgsTbl" )
 //            TODO parse html to views
+        }
+
+        private fun makeDataTable(doc: Document, titleData: String, tableClass: String) {
+            val pivotTitle = doc.selectFirst("[href*=$titleData]")
+            val pivotTime = pivotTitle.nextElementSibling()
+            val tl2 = newTableLayout()
+            val tr2 = newTableRow(tl2)
+            newTextView(pivotTitle, tr2,true)
+            newTextView(pivotTime, tr2,true)
+            val pivotTable = doc.selectFirst(tableClass)
+            val pivotHead = pivotTable.select("th")
+            val tlPivot = newTableLayout()
+            val trPivotHead = newTableRow(tlPivot)
+            pivotHead.forEach {
+                newTextView(it, trPivotHead, true).typeface = Typeface.DEFAULT_BOLD
+            }
+            val pivotTrs = pivotTable.select("tr")
+            pivotTrs.forEach { tr ->
+                val trPivotData = newTableRow(tlPivot)
+                tr.select("td").forEach { td ->
+//                    println(td.html())
+                    if (!td.classNames().contains("lastRow")) {
+//                        println("first is ${td.text()}")
+                        val tv = newTextView(td, trPivotData)
+                    }else{
+                        td.select(".inlineblock").forEach {ib->
+                            val tvLast = newTextView(ib, null)
+                            details_container.addView(tvLast)
+                        }
+                    }
+                }
+            }
+        }
+
+        private val defLLParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        private val defTLParams = TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT)
+        private val defTRParams = TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT)
+
+        private fun newTextView(element:Element, row: TableRow?, ownText: Boolean = false) :TextView {
+            val tv = TextView(this.context)
+            val m = dpToPx(8)
+            defTRParams.setMargins(m,m/2,0,m/2)
+            tv.layoutParams = defTRParams
+            if (ownText) tv.text = element.ownText()
+            else tv.text = element.text()
+            row?.addView(tv)
+
+            fun setTextStyle(element: Element, textView: TextView) {
+                println(element.classNames().toString())
+                if (element.hasClass("bold"))
+                    textView.typeface = Typeface.DEFAULT_BOLD
+                if (element.hasClass("greenFont"))
+                    textView.setTextColor(Color.GREEN)
+                if (element.hasClass("redFont"))
+                    textView.setTextColor(Color.RED)
+            }
+            return tv
+        }
+        private fun newTableLayout() :TableLayout {
+            val tl = TableLayout(this.context)
+            tl.layoutParams = defLLParams
+            details_container.addView(tl)
+            return tl
+        }
+        private fun newTableRow(table: TableLayout) :TableRow {
+            val tr = TableRow(this.context)
+            tr.layoutParams = defTLParams
+            table.addView(tr)
+            return tr
+        }
+
+        fun dpToPx(dps: Int): Int {
+            val scale = resources.displayMetrics.density
+            return (dps * scale + 0.5f).toInt()
         }
 
         private var pair: String? = null
@@ -140,7 +236,7 @@ class DetailsActivity : AppCompatActivity() {
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                   savedInstanceState: Bundle?): View? {
             val rootView = inflater.inflate(R.layout.fragment_tabs, container, false)
-            rootView.section_label.text = getString(R.string.section_format, arguments?.getInt(ARG_SECTION_NUMBER))
+//            rootView.section_label.text = getString(R.string.section_format, arguments?.getInt(ARG_SECTION_NUMBER))
             pair = arguments?.getString(ARG_PAIR)
             pairName = arguments?.getString(ARG_PAIR_NAME)
             secNum = arguments?.getInt(ARG_SECTION_NUMBER)

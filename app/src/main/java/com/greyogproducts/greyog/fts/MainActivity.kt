@@ -2,6 +2,7 @@ package com.greyogproducts.greyog.fts
 
 import android.annotation.SuppressLint
 import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.support.v4.app.Fragment
@@ -74,12 +75,21 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
 //        container.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabs))
 //        tabs.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(container))
 
+        fab.visibility = View.VISIBLE
         fab.setOnClickListener { view ->
-            showInterstitial()
+            launchTestDetails()
+//            showInterstitial()
         }
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         RetrofitHelper.instance.prefs = prefs
 
+    }
+
+    private fun launchTestDetails() {
+        val intent = Intent(this, DetailsActivity::class.java)
+        intent.putExtra("pair", "1")
+        intent.putExtra("name", "NAME_HERE")
+        startActivity(intent)
     }
 
     private fun showInterstitial() {
