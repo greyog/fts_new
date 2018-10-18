@@ -1,4 +1,4 @@
-package com.greyogproducts.greyog.fts
+package com.greyogproducts.greyog.fts3
 
 import android.graphics.Color
 import android.graphics.Typeface
@@ -144,13 +144,23 @@ class DetailsActivity : AppCompatActivity() {
             stls.forEach {stl ->
                 val tr1 = newTableRow(tl1)
                 stl.children().forEach {
-                    val tv = newTextView(it, tr1)
+                    newTextView(it, tr1)
                 }
             }
-            makeDataTable(doc, "pivot-points", ".crossRatesTbl" )
+            addDivider()
             makeDataTable(doc, "indicators", ".technicalIndicatorsTbl" )
+            addDivider()
             makeDataTable(doc, "moving-averages", ".movingAvgsTbl" )
-//            TODO parse html to views
+            addDivider()
+            makeDataTable(doc, "pivot-points", ".crossRatesTbl" )
+
+        }
+
+        private fun addDivider() {
+            val divider = View(context)
+            divider.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(3))
+            divider.setBackgroundColor(resources.getColor(R.color.primaryDarkColor))
+            details_container.addView(divider)
         }
 
         private fun makeDataTable(doc: Document, titleData: String, tableClass: String) {
@@ -194,20 +204,29 @@ class DetailsActivity : AppCompatActivity() {
             val m = dpToPx(8)
             defTRParams.setMargins(m,m/2,0,m/2)
             tv.layoutParams = defTRParams
+            setTextStyle(element,tv)
             if (ownText) tv.text = element.ownText()
-            else tv.text = element.text()
+            else {
+                var s = element.ownText()
+                element.children().forEach {
+                    s+=" "+it.text()
+                    setTextStyle(it, tv)
+                }
+                tv.text = s
+            }
             row?.addView(tv)
 
-            fun setTextStyle(element: Element, textView: TextView) {
-                println(element.classNames().toString())
-                if (element.hasClass("bold"))
-                    textView.typeface = Typeface.DEFAULT_BOLD
-                if (element.hasClass("greenFont"))
-                    textView.setTextColor(Color.GREEN)
-                if (element.hasClass("redFont"))
-                    textView.setTextColor(Color.RED)
-            }
+
             return tv
+        }
+        private fun setTextStyle(element: Element, textView: TextView) {
+//                println(element.classNames().toString())
+            if (element.hasClass("bold"))
+                textView.typeface = Typeface.DEFAULT_BOLD
+            if (element.hasClass("greenFont"))
+                textView.setTextColor(Color.GREEN)
+            if (element.hasClass("redFont"))
+                textView.setTextColor(Color.RED)
         }
         private fun newTableLayout() :TableLayout {
             val tl = TableLayout(this.context)
@@ -222,7 +241,7 @@ class DetailsActivity : AppCompatActivity() {
             return tr
         }
 
-        fun dpToPx(dps: Int): Int {
+        private fun dpToPx(dps: Int): Int {
             val scale = resources.displayMetrics.density
             return (dps * scale + 0.5f).toInt()
         }

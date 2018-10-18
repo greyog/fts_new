@@ -3,16 +3,16 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-android-extensions'
-apply plugin: 'com.google.gms.google-services'
+//apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion 26
     defaultConfig {
-        applicationId "com.greyogproducts.greyog.fts"
+        applicationId "com.greyogproducts.greyog.fts3"
         minSdkVersion 15
         targetSdkVersion 26
-        versionCode 17
-        versionName '3.17'
+        versionCode 20
+        versionName '0.20'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -42,5 +42,7 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.11.2'
     implementation 'pl.droidsonroids:jspoon:1.0.0'
     implementation 'pl.droidsonroids.retrofit2:converter-jspoon:1.0.0'
-    implementation 'com.google.firebase:firebase-ads:17.0.0'
+    //    implementation 'com.google.firebase:firebase-ads:17.0.0'
+    //    implementation 'com.google.firebase:firebase-core:16.0.4'
+    //    implementation 'com.google.android.gms:play-services-ads:17.0.0'
 }

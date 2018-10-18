@@ -1,4 +1,4 @@
-package com.greyogproducts.greyog.fts
+package com.greyogproducts.greyog.fts3
 
 import android.support.test.InstrumentationRegistry
 import android.support.test.runner.AndroidJUnit4

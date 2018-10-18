@@ -1,4 +1,4 @@
-package com.greyogproducts.greyog.fts
+package com.greyogproducts.greyog.fts3
 
 import android.content.SharedPreferences
 import okhttp3.Interceptor

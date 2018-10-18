@@ -1,4 +1,4 @@
-package com.greyogproducts.greyog.fts
+package com.greyogproducts.greyog.fts3
 
 import android.annotation.SuppressLint
 import android.content.DialogInterface
@@ -11,13 +11,9 @@ import android.support.v4.app.FragmentPagerAdapter
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.SearchView
-import android.support.v7.widget.ShareActionProvider
 import android.view.*
 import android.widget.Toast
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.InterstitialAd
-import com.greyogproducts.greyog.fts.RetrofitHelper.OnSearchResponseListener
+import com.greyogproducts.greyog.fts3.RetrofitHelper.OnSearchResponseListener
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.auto_update_layout.view.*
 import kotlinx.android.synthetic.main.fragment_main.view.*
@@ -57,14 +53,13 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
         RetrofitHelper.instance.doSummaryRequest()
     }
 
-    private lateinit var mAdView: AdView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         setSupportActionBar(toolbar)
-        loadAds()
+//        loadAds()
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = SectionsPagerAdapter(supportFragmentManager)
@@ -75,7 +70,7 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
 //        container.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabs))
 //        tabs.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(container))
 
-        fab.visibility = View.VISIBLE
+//        fab.visibility = View.VISIBLE
         fab.setOnClickListener { view ->
             launchTestDetails()
 //            showInterstitial()
@@ -92,27 +87,30 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
         startActivity(intent)
     }
 
-    private fun showInterstitial() {
-        if (mInterstitialAd.isLoaded && Math.random() > 0.7)
-            mInterstitialAd.show()
-        else
-            println("No interstitial")
-    }
-
-    private lateinit var mInterstitialAd: InterstitialAd
-
-    private fun loadAds() {
-        mAdView = findViewById(R.id.adView)
-        val adRequest = AdRequest.Builder().build()
-        mAdView.loadAd(adRequest)
-
-        mInterstitialAd = InterstitialAd(this)
-        mInterstitialAd.adUnitId = "ca-app-pub-7481139450301121/4167406890"
-        mInterstitialAd.loadAd(AdRequest.Builder().build())
-    }
+//    private fun showInterstitial() {
+//        if (mInterstitialAd.isLoaded && Math.random() > 0.7)
+//            mInterstitialAd.show()
+//        else
+//            println("No interstitial")
+//    }
 
 
-    private var mShareActionProvider: ShareActionProvider? = null
+//    private fun loadAds() {
+//        MobileAds.initialize(this, "ca-app-pub-7481139450301121~7017797434");
+//        mAdView = findViewById(R.id.adView)
+//        val adRequest = AdRequest.Builder()
+//                .addTestDevice("e071963521c3ebcd").build()
+//        mAdView.loadAd(adRequest)
+//
+//        mInterstitialAd = InterstitialAd(this)
+//        mInterstitialAd.adUnitId = "ca-app-pub-7481139450301121/2352342853"
+//        mInterstitialAd.loadAd(AdRequest.Builder()
+//                .addTestDevice("e071963521c3ebcd")
+//                .build())
+//    }
+
+
+//    private var mShareActionProvider: ShareActionProvider? = null
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -239,7 +237,7 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
             if (time <= 0) time = 5
             prefs.edit().putInt("auto_time", time).putBoolean("auto", sw.isChecked).apply()
             setUpdTimer()
-            showInterstitial()
+//            showInterstitial()
         }
 //        builder.setTitle(R.string.action_auto_update);
         builder.setView(v)
@@ -275,7 +273,7 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
         builder.setTitle(R.string.action_about)
         builder.setView(R.layout.about_layout)
         val listener = DialogInterface.OnClickListener { dialogInterface, i ->
-            showInterstitial()
+//            showInterstitial()
         }
         builder.setPositiveButton(R.string.ok, listener)
         builder.create().show()
@@ -283,13 +281,13 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
 
     private fun showSortDialog() {
         (mSectionsPagerAdapter?.currentFragment as? SummaryFragment)?.showSortDialog()
-        showInterstitial()
+//        showInterstitial()
 
     }
 
     private fun reloadFragments() {
         (mSectionsPagerAdapter?.currentFragment as? SummaryFragment)?.onRefresh()
-        showInterstitial()
+//        showInterstitial()
     }
 
 

@@ -1,4 +1,4 @@
-package com.greyogproducts.greyog.fts.dummy
+package com.greyogproducts.greyog.fts3.dummy
 
 import java.util.ArrayList
 import java.util.HashMap

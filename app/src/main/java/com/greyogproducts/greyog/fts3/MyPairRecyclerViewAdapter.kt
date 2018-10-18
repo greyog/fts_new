@@ -1,4 +1,4 @@
-package com.greyogproducts.greyog.fts
+package com.greyogproducts.greyog.fts3
 
 
 import android.content.Context
@@ -13,8 +13,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
-import com.greyogproducts.greyog.fts.SummaryFragment.OnListFragmentInteractionListener
-import com.greyogproducts.greyog.fts.dummy.DummyContent.DummyItem
+import com.greyogproducts.greyog.fts3.SummaryFragment.OnListFragmentInteractionListener
+import com.greyogproducts.greyog.fts3.dummy.DummyContent.DummyItem
 import kotlinx.android.synthetic.main.fragment_pair.view.*
 import kotlinx.android.synthetic.main.simple_text_view.view.*
 import java.util.*

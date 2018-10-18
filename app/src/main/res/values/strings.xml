@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Forex Technical Summary</string>
+    <string name="app_name">Forex Dashboard Pro</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="title_activity_main_tab">FTS</string>
@@ -32,7 +32,6 @@ Greyog App Products, Fusion Media and Investing.com will not accept any liabilit
     <string name="share_title">Share</string>
     <string name="policy">Privacy policy:\n
         https://www.appodeal.com/privacy-policy</string>
-    <string name="banner_ad_unit_id">ca-app-pub-7481139450301121/3991868493</string>
     <array name="list_item_long_menu">
         <item>View details</item>
         <item>Delete</item>
