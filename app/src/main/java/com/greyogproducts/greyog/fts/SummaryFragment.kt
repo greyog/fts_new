@@ -178,9 +178,9 @@ class SummaryFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
         @JvmStatic
         fun newInstance(columnCount: Int) =
                 SummaryFragment().apply {
-                    arguments = Bundle().apply {
-                        putInt(ARG_COLUMN_COUNT, columnCount)
-                    }
+                    //                    arguments = Bundle().apply {
+//                        putInt(ARG_COLUMN_COUNT, columnCount)
+//                    }
                 }
     }
 

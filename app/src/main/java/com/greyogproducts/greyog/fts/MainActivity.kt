@@ -344,8 +344,8 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
                 if (fragments.size > sectionNumber) return fragments[sectionNumber]
                 val args = Bundle()
                 args.putInt(ARG_SECTION_NUMBER, sectionNumber)
-                val fragment = if (sectionNumber == 0) SummaryFragment.newInstance(4)
-                else PlaceholderFragment()
+                val fragment = SummaryFragment.newInstance(4)
+//                else PlaceholderFragment()
                 fragment.arguments = args
                 fragments.add(fragment)
                 return fragment

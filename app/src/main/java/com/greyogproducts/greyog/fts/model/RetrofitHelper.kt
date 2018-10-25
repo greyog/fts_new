@@ -333,6 +333,8 @@ class RetrofitHelper {
         val defPeriods: MutableSet<String> = mutableSetOf("300", "900", "3600", "18000", "86400", "week", "month")
         val defPairs: MutableSet<String> = when (tabNum) {
             2 -> mutableSetOf("169", "166", "14958", "20", "172", "27", "167", "168", "178", "171", "17940")
+            1 -> mutableSetOf("7888", "6617", "252", "7997", "6408", "8952", "280", "8193", "6369", "8082", "243", "352", "302", "334", "474", "670", "6974")
+            3 -> mutableSetOf("8830", "8836", "8831", "8849", "8833", "8862", "8917")
             else -> mutableSetOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")
 
         }
