@@ -1,15 +1,41 @@
-package com.greyogproducts.greyog.fts3
+package com.greyogproducts.greyog.fts.data
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
-import java.util.ArrayList
 
-class MyResponseResult {
+class SummaryItemData {
+    var pid: String? = null
+    var price: String? = null
+    val inds = java.util.ArrayList<String>()
+    val mas = java.util.ArrayList<String>()
+    val sums = java.util.ArrayList<String>()
+    var name: String? = null
+    var symbol: String? = null
+
+    override fun toString(): String {
+        return "id: $pid, symbol: $symbol, name: $name, sums: $sums\n"
+    }
+}
+
+class RawSummaryResponseResult {
+
+    @SerializedName("html")
+    @Expose
+    @JvmField
+    var html = ""
+
+    override fun toString(): String {
+        return "html : $html"
+    }
+
+}
+
+class SearchResponseResult {
 
     @SerializedName("All")
     @Expose
     @JvmField
-    var all: List<All> = ArrayList()
+    var all: List<All> = java.util.ArrayList()
 
     override fun toString(): String {
         return "All : " + all.toString()
@@ -102,21 +128,3 @@ class All {
     }
 }
 
-
-class MyResponseSummaryResult {
-
-    @SerializedName("html")
-    @Expose
-    @JvmField
-    var html = ""
-
-//    @SerializedName("html")
-//    @Expose
-//    @JvmField
-//    var r2 = ""
-
-    override fun toString(): String {
-        return "html : $html"
-    }
-
-}

@@ -1,6 +1,9 @@
-package com.greyogproducts.greyog.fts3
+package com.greyogproducts.greyog.fts.model
 
 import android.content.SharedPreferences
+import com.greyogproducts.greyog.fts.data.RawSummaryResponseResult
+import com.greyogproducts.greyog.fts.data.SearchResponseResult
+import com.greyogproducts.greyog.fts.data.SummaryItemData
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
@@ -19,42 +22,63 @@ class RetrofitHelper {
 
     companion object {
         private var mInstance : RetrofitHelper? = null
-        val instance : RetrofitHelper
+        private val instance: RetrofitHelper
             get() {
                 if (mInstance == null) {
                     mInstance = RetrofitHelper()
                 }
                 return mInstance!!
             }
+
+        fun requestSummaryList(tabNum: Int, listener: OnResponseListener) {
+            if (instance.phpSessId == null) {
+                instance.doTechRequest(object : OnTechRequestCallBack {
+                    override fun onHappySessId() {
+                        println("CONNECTION OK, now requesting data...")
+                        instance.doSummaryRequest(tabNum, listener)
+                    }
+
+                    override fun onBadSessId() {
+                        println("NO CONNECTION!")
+//                        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                    }
+
+                })
+            } else
+                instance.doSummaryRequest(tabNum, listener)
+        }
     }
 
     private val baseURL = "https://www.investing.com"
-    internal var phpSessId: String? = null
-    internal var stickySess: String? = null
+    private var phpSessId: String? = null
+    private var stickySess: String? = null
     //    private var preferences: SharedPreferences? = null
-    var onResponseListener: OnResponseListener? = null
-    var onResponsePairDataListener: OnResponsePairDataListener? = null
-    var onSearchResponseListener: OnSearchResponseListener? = null
-    lateinit var prefs: SharedPreferences
+//    private var onResponseListener: OnResponseListener? = null
+    private var onResponsePairDataListener: OnResponsePairDataListener? = null
+    private var onSearchResponseListener: OnSearchResponseListener? = null
+    private var prefs: SharedPreferences? = null
 
     interface OnResponsePairDataListener {
         fun onResponseTechData(period: String, raw: String)
     }
 
     interface OnResponseListener {
-        fun onResponse(responseResult: MyResponseResult?)
+        //        fun onResponse(responseResult: SearchResponseResult?)
+        fun onSummaryResponse(columns: ArrayList<String>, items: ArrayList<SummaryItemData>)
+    }
+
+    interface OnTechRequestCallBack {
         fun onHappySessId()
         fun onBadSessId()
-        fun onSummaryResponse(columns: ArrayList<String>, items: ArrayList<SummaryListItem>)
     }
 
     interface OnSearchResponseListener {
-        fun onSearchResponse(response: MyResponseResult?)
+        fun onSearchResponse(response: SearchResponseResult?)
     }
 
-    init {
-        doTechRequest()
-    }
+//    init {
+//        doTechRequest(listener)
+//    }
 
 
 //    fun setPrefs(prefs: SharedPreferences) {
@@ -74,7 +98,7 @@ class RetrofitHelper {
         fun searchRequest(@Field("search_text") searchText: String,
                           @Field("term") term: String,
                           @Field("country_id") countryId: String, // =0
-                          @Field("tab_id") tabId: String): Call<MyResponseResult>  // =All
+                          @Field("tab_id") tabId: String): Call<SearchResponseResult>  // =All
 
         @Headers("Host: www.investing.com", "Connection: keep-alive", "Content-Length: 44", "Cache-Control: max-age=0", "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36", "Upgrade-Insecure-Requests: 1", "Accept: application/json, text/javascript, */*; q=0.01", "Origin: https://www.investing.com", "X-Requested-With: XMLHttpRequest", "Content-Type: application/x-www-form-urlencoded", "Referer: https://www.investing.com/technical/technical-summary", "Accept-Language: en-GB,en-US;q=0.9,en;q=0.8")
         @FormUrlEncoded
@@ -89,7 +113,7 @@ class RetrofitHelper {
         fun getSummaryTable(@Field("tab") tab: String,
                             @Field("options[periods][]") periods: MutableSet<String>,
                             @Field("options[receive_email]") email: String, // = false
-                            @Field("options[currencies][]") pairs: MutableSet<String>): Call<MyResponseSummaryResult>
+                            @Field("options[currencies][]") pairs: MutableSet<String>): Call<RawSummaryResponseResult>
     }
 
     private class RequestInterceptor(val phpSessId: String?, val stickySess: String?) : Interceptor {
@@ -103,7 +127,7 @@ class RetrofitHelper {
         }
     }
 
-    class ResponseInterceptor : Interceptor {
+    class ResponseInterceptor(private val listener: OnResponseListener) : Interceptor {
 
         override fun intercept(chain: Interceptor.Chain?): okhttp3.Response {
             val response = chain!!.proceed(chain.request())
@@ -120,14 +144,14 @@ class RetrofitHelper {
                 if (it.hasClass("symbol") || it.hasClass("type")) return@forEach
                 cols.add(it.text())
             }
-            val itemList = ArrayList<SummaryListItem>()
-            itemList.add(SummaryListItem())
+            val itemList = ArrayList<SummaryItemData>()
+            itemList.add(SummaryItemData())
             val tbody = doc.getElementsByTag("tbody")
             for (tr in tbody.select("tr")) {
                 val pid = tr.attr("data-pairid")
                 val type = tr.attr("data-row-type")
 //                var lastItem = if (itemList.isEmpty()) {
-//                    val new = SummaryListItem()
+//                    val new = SummaryItemData()
 //                    itemList.add(new)
 //                    new
 //                } else itemList.last()
@@ -136,7 +160,7 @@ class RetrofitHelper {
                     lastItem.pid = pid
                 }
                 if (lastItem.pid != pid) {
-                    lastItem = SummaryListItem()
+                    lastItem = SummaryItemData()
                     itemList.add(lastItem)
                     lastItem.pid = pid
                 }
@@ -157,7 +181,7 @@ class RetrofitHelper {
                     }
                 }
             }
-            instance.onResponseListener?.onSummaryResponse(cols, itemList)
+            listener.onSummaryResponse(cols, itemList)
 //            println(itemList)
             return response
         }
@@ -166,7 +190,7 @@ class RetrofitHelper {
 
     private var triesCount = 0
 
-    private fun doTechRequest() {
+    fun doTechRequest(listener: OnTechRequestCallBack) {
         triesCount += 1
         val retrofit = Retrofit.Builder()
                 .baseUrl(baseURL)
@@ -178,72 +202,72 @@ class RetrofitHelper {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 if (!response.isSuccessful) {
                     println( "onResponse: " + response.message())
-                    if (triesCount <= 10) doTechRequest() else unHappyId()
+                    if (triesCount <= 10) doTechRequest(listener) else unHappyId()
                 } else {
                     triesCount = 0
                     println("onResponse: ok " + response.headers().values("Set-Cookie"))
                     for (s in response.headers().values("Set-Cookie")) {
                         if (s.toUpperCase().contains("PHPSESSID")) {
-                            phpSessId = s.split("; ".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0]
+                            phpSessId = s.split("; ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
                             println("onResponse: " + phpSessId!!)
 //                            preferences!!.edit().putString("phpSessID", phpSessId).apply()
                         }
                         if (s.contains("StickySession")) {
-                            stickySess = s.split("; ".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0]
+                            stickySess = s.split("; ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
                             println("onResponse: " + stickySess!!)
 //                            preferences!!.edit().putString("stickySess", stickySess).apply()
                         }
                     }
-                    onResponseListener?.onHappySessId()
+                    listener.onHappySessId()
                 }
             }
 
             private fun unHappyId() {
                 println("too many tries")
-                onResponseListener?.onBadSessId()
+                listener.onBadSessId()
             }
 
             override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
                 t.printStackTrace()
-                if (triesCount <= 10) doTechRequest() else unHappyId()
+                if (triesCount <= 10) doTechRequest(listener) else unHappyId()
             }
         })
     }
 
-    fun doRequest(text: String) {
-        if (phpSessId == null) {
-            println("doRequest: no phpSessID found")
-            return
-        }
-        val client = OkHttpClient.Builder()
-                .addInterceptor(RequestInterceptor(phpSessId,stickySess))
-                .build()
-        val retrofit = Retrofit.Builder()
-                .baseUrl(baseURL)
-                .client(client)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-
-        val server = retrofit.create(Server::class.java)
-        val call = server.searchRequest(text, text, "0", "All")
-        println("doRequest: request = " + call.request().headers().toMultimap())
-
-        call.enqueue(object : Callback<MyResponseResult> {
-            override fun onResponse(call: Call<MyResponseResult>, response: Response<MyResponseResult>) {
-                if (response.isSuccessful) {
-                    //                    println("onResponse: ok, response : " + response.headers().toMultimap().toString());
-                    //                    println("onResponse: body : " + response.body().toString());
-                    onResponseListener?.onResponse(response.body())
-                } else {
-                    println("onResponse: " + response.message())
-                }
-            }
-
-            override fun onFailure(call: Call<MyResponseResult>, t: Throwable) {
-                t.printStackTrace()
-            }
-        })
-    }
+//    fun doRequest(text: String) {
+//        if (phpSessId == null) {
+//            println("doRequest: no phpSessID found")
+//            return
+//        }
+//        val client = OkHttpClient.Builder()
+//                .addInterceptor(RequestInterceptor(phpSessId, stickySess))
+//                .build()
+//        val retrofit = Retrofit.Builder()
+//                .baseUrl(baseURL)
+//                .client(client)
+//                .addConverterFactory(GsonConverterFactory.create())
+//                .build()
+//
+//        val server = retrofit.create(Server::class.java)
+//        val call = server.searchRequest(text, text, "0", "All")
+//        println("doRequest: request = " + call.request().headers().toMultimap())
+//
+//        call.enqueue(object : Callback<SearchResponseResult> {
+//            override fun onResponse(call: Call<SearchResponseResult>, response: Response<SearchResponseResult>) {
+//                if (response.isSuccessful) {
+//                    //                    println("onResponse: ok, response : " + response.headers().toMultimap().toString());
+//                    //                    println("onResponse: body : " + response.body().toString());
+//                    onResponseListener?.onResponse(response.body())
+//                } else {
+//                    println("onResponse: " + response.message())
+//                }
+//            }
+//
+//            override fun onFailure(call: Call<SearchResponseResult>, t: Throwable) {
+//                t.printStackTrace()
+//            }
+//        })
+//    }
 
     fun doSinglePairRequest(pairId: String, period: String) {
         println("doSinglePairRequest: pair= $pairId, period= $period")
@@ -252,7 +276,7 @@ class RetrofitHelper {
             return
         }
         val client = OkHttpClient.Builder()
-                .addInterceptor(RequestInterceptor(phpSessId,stickySess))
+                .addInterceptor(RequestInterceptor(phpSessId, stickySess))
                 .build()
         val retrofit = Retrofit.Builder()
                 .baseUrl(baseURL)
@@ -289,69 +313,53 @@ class RetrofitHelper {
     }
 
 
-    fun doSummaryRequest() {
+    fun doSummaryRequest(tabNum: Int, listener: OnResponseListener) {
         if (phpSessId == null) {
             println("doRequest: no phpSessID found")
             return
         }
         val client = OkHttpClient.Builder()
-                .addInterceptor(RequestInterceptor(phpSessId,stickySess))
-                .addInterceptor(ResponseInterceptor())
+                .addInterceptor(RequestInterceptor(phpSessId, stickySess))
+                .addInterceptor(ResponseInterceptor(listener))
                 .build()
         val retrofit = Retrofit.Builder()
                 .baseUrl(baseURL)
                 .client(client)
-//                .addConverterFactory(GsonConverterFactory.create())
                 .addConverterFactory(JspoonConverterFactory.create())
                 //                .addConverterFactory(ScalarsConverterFactory.create())
                 .build()
 
         val server = retrofit.create(Server::class.java)
-        val defPeriods = mutableSetOf("300", "900",  "3600" ,"18000","86400", "week", "month")
-        val p = prefs.getStringSet("periods", defPeriods )
-        val defPairs = mutableSetOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")
-        if (!prefs.contains("pairs"))
-            prefs.edit().putStringSet("pairs", defPairs).apply()
-        val c = prefs.getStringSet("pairs",defPairs)//, "11", "12", "13", "169", "166", "14958", "20", "172", "27", "167", "168", "178", "171", "17940")
+        val defPeriods: MutableSet<String> = mutableSetOf("300", "900", "3600", "18000", "86400", "week", "month")
+        val defPairs: MutableSet<String> = when (tabNum) {
+            2 -> mutableSetOf("169", "166", "14958", "20", "172", "27", "167", "168", "178", "171", "17940")
+            else -> mutableSetOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")
+
+        }
+        val p = setOf<String>().toMutableSet()
+        val c = setOf<String>().toMutableSet()
+        prefs?.let {
+            p += it.getStringSet("periods", defPeriods)
+            if (!it.contains("pairs"))
+                it.edit().putStringSet("pairs", defPairs).apply()
+            c += it.getStringSet("pairs", defPairs) //, "11", "12", "13", "169", "166", "14958", "20", "172", "27", "167", "168", "178", "171", "17940")
+        }
         println("pairs to load: $c")
         if (c.isEmpty()) c.addAll(defPairs)
         val call = server.getSummaryTable("forex", p, "false", c)
-
-        //        call.enqueue(new Callback<ResponseBody>() {
-        //            @Override
-        //            public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
-        //                if (!response.isSuccessful()){ println("onResponse: "+response.message());}
-        //                else {
-        //                    println("onResponseTechData: ok "+ response.headers().values("Set-Cookie"));
-        //                    try {
-        //                        onResponseListener.onResponseTechData(response.body().string());
-        ////                        println("onResponse: ok "+ response.body().string());
-        //                    } catch (IOException e) {
-        //                        e.printStackTrace();
-        //                    }
-        //                }
-        //            }
-        //
-        //            @Override
-        //            public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
-        //                t.printStackTrace();
-        //            }
-        //        });
-
-        //        println("doRequest: request = " + call.request().headers().toMultimap());
-        //
-        call.enqueue(object : Callback<MyResponseSummaryResult> {
-            override fun onResponse(call: Call<MyResponseSummaryResult>, response: Response<MyResponseSummaryResult>) {
-                if (response.isSuccessful) {
+        call.enqueue(object : Callback<RawSummaryResponseResult> {
+            override fun onResponse(call: Call<RawSummaryResponseResult>, responseRaw: Response<RawSummaryResponseResult>) {
+                if (responseRaw.isSuccessful) {
+//                    all data processes at response interceptor
                     //                    println("onResponse: ok, response : " + response.headers().toMultimap().toString());
                     //                    println("onResponse: body : " + response.body().toString());
 //                    onResponseListener?.onSummaryResponse(response.body())
                 } else {
-                    println("onResponse: " + response.message())
+                    println("onResponse: " + responseRaw.message())
                 }
             }
 
-            override fun onFailure(call: Call<MyResponseSummaryResult>, t: Throwable) {
+            override fun onFailure(call: Call<RawSummaryResponseResult>, t: Throwable) {
                 t.printStackTrace()
             }
         })
@@ -363,7 +371,7 @@ class RetrofitHelper {
             return
         }
         val client = OkHttpClient.Builder()
-                .addInterceptor(RequestInterceptor(phpSessId,stickySess))
+                .addInterceptor(RequestInterceptor(phpSessId, stickySess))
                 .build()
         val retrofit = Retrofit.Builder()
                 .baseUrl(baseURL)
@@ -372,8 +380,8 @@ class RetrofitHelper {
                 .build()
         val server = retrofit.create(Server::class.java)
         val call = server.searchRequest(text, text, "0", "All")
-        call.enqueue(object : Callback<MyResponseResult> {
-            override fun onResponse(call: Call<MyResponseResult>, response: Response<MyResponseResult>) {
+        call.enqueue(object : Callback<SearchResponseResult> {
+            override fun onResponse(call: Call<SearchResponseResult>, response: Response<SearchResponseResult>) {
                 if (response.isSuccessful) {
                     onSearchResponseListener?.onSearchResponse(response.body())
                 }else {
@@ -381,7 +389,7 @@ class RetrofitHelper {
                 }
             }
 
-            override fun onFailure(call: Call<MyResponseResult>, t: Throwable) {
+            override fun onFailure(call: Call<SearchResponseResult>, t: Throwable) {
                 t.printStackTrace()
             }
         })

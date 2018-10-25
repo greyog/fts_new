@@ -1,7 +1,8 @@
-package com.greyogproducts.greyog.fts3
+package com.greyogproducts.greyog.fts
 import android.content.Context
 import android.widget.ArrayAdapter
 import android.widget.Filter
+import com.greyogproducts.greyog.fts.data.All
 
 
 class SuggestionAdapter(context: Context, private val items: List<All>)

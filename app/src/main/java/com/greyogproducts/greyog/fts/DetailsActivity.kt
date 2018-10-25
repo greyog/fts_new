@@ -1,4 +1,4 @@
-package com.greyogproducts.greyog.fts3
+package com.greyogproducts.greyog.fts
 
 import android.graphics.Color
 import android.graphics.Typeface
@@ -17,6 +17,7 @@ import android.widget.LinearLayout
 import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
+import com.greyogproducts.greyog.fts.model.RetrofitHelper
 import kotlinx.android.synthetic.main.activity_tabs.*
 import kotlinx.android.synthetic.main.fragment_tabs.*
 import org.jsoup.Jsoup
@@ -105,14 +106,15 @@ class DetailsActivity : AppCompatActivity() {
 
         private val fragments = emptyMap<Int, PlaceholderFragment>().toMutableMap()
         init {
-            RetrofitHelper.instance.onResponsePairDataListener = this
+//            RetrofitHelper.instance.onResponsePairDataListener = this
+//            TODO
         }
 
 
         override fun getItem(position: Int): Fragment {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            val fragment =PlaceholderFragment.newInstance(position, mPairId, mPairName)
+            val fragment = PlaceholderFragment.newInstance(position, mPairId, mPairName)
             fragments[position] = fragment
             return fragment
         }
@@ -260,7 +262,8 @@ class DetailsActivity : AppCompatActivity() {
             pairName = arguments?.getString(ARG_PAIR_NAME)
             secNum = arguments?.getInt(ARG_SECTION_NUMBER)
             if (pair != null && secNum !=null) {
-                RetrofitHelper.instance.doSinglePairRequest(pair!!,periods[secNum!!])
+                TODO()
+//                RetrofitHelper.instance.doSinglePairRequest(pair!!,periods[secNum!!])
 //                println("createView: section = $secNum, pair = $pair, period = ${periods[secNum!!]}")
             }
             return rootView

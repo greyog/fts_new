@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Forex Dashboard Pro</string>
+    <string name="app_name">Forex Technical Summary</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="title_activity_main_tab">FTS</string>
@@ -37,7 +37,8 @@ Greyog App Products, Fusion Media and Investing.com will not accept any liabilit
         <item>Delete</item>
     </array>
     <string name="title_activity_tabs">TabsActivity</string>
-    <string name="tab_text_1">Tab 1</string>
-    <string name="tab_text_2">Tab 2</string>
-    <string name="tab_text_3">Tab 3</string>
+    <string name="tab_text_1">Forex</string>
+    <string name="tab_text_2">Stock</string>
+    <string name="tab_text_3">Indices</string>
+    <string name="tab_text_4">Commodities</string>
 </resources>

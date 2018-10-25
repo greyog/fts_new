@@ -1,4 +1,4 @@
-package com.greyogproducts.greyog.fts3
+package com.greyogproducts.greyog.fts
 
 
 import android.content.Context
@@ -13,8 +13,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
-import com.greyogproducts.greyog.fts3.SummaryFragment.OnListFragmentInteractionListener
-import com.greyogproducts.greyog.fts3.dummy.DummyContent.DummyItem
+import com.greyogproducts.greyog.fts.SummaryFragment.OnListFragmentInteractionListener
+import com.greyogproducts.greyog.fts.data.SummaryItemData
+import com.greyogproducts.greyog.fts.dummy.DummyContent.DummyItem
 import kotlinx.android.synthetic.main.fragment_pair.view.*
 import kotlinx.android.synthetic.main.simple_text_view.view.*
 import java.util.*
@@ -27,7 +28,7 @@ import kotlin.math.sign
  * specified [OnListFragmentInteractionListener].
  */
 class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
-                                items: ArrayList<SummaryListItem>?,
+                                items: ArrayList<SummaryItemData>?,
                                 private val mListener: OnListFragmentInteractionListener?)
     : RecyclerView.Adapter<MyPairRecyclerViewAdapter.ViewHolder>() {
 
@@ -36,16 +37,16 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
     private val mOnClickListener: View.OnClickListener
     private val sort : Int
         get() = mPrefs.getInt("sort", 1)
-    private var mValues: MutableList<SummaryListItem>
+    private var mValues: MutableList<SummaryItemData>
 
     init {
         mOnClickListener = View.OnClickListener { v ->
-            val item = v.tag as SummaryListItem
+            val item = v.tag as SummaryItemData
             // Notify the active callbacks interface (the activity, if the fragment is attached to
             // one) that an item has been selected.
             mListener?.onListFragmentInteraction(item)
         }
-        mValues = MutableList(0){SummaryListItem()}
+        mValues = MutableList(0) { SummaryItemData() }
         if (items != null) {
             mValues.addAll(items)
         }
@@ -159,7 +160,7 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
 //        println("sorted by : $col")
 
         val sortDir = arrayOf("Strong Buy", "Buy", "Neutral", "Sell", "Strong Sell")
-        fun getSortResult(t1: SummaryListItem, t2: SummaryListItem, f: Int): Int {
+        fun getSortResult(t1: SummaryItemData, t2: SummaryItemData, f: Int): Int {
             val c = f.absoluteValue - 2
             if (t1.sums.size <= c) return 0
             val n1 = t1.sums[c]
@@ -168,25 +169,25 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
             val pos2 = sortDir.binarySearch(n2)
             return Math.signum((pos1 - pos2).toFloat()).toInt() * f.sign
         }
-//        class MyComparator : Comparator<SummaryListItem> {
-//            override fun compare(p0: SummaryListItem?, p1: SummaryListItem?): Int {
+//        class MyComparator : Comparator<SummaryItemData> {
+//            override fun compare(p0: SummaryItemData?, p1: SummaryItemData?): Int {
 //                val r = p0?.name!!.compareTo(p1?.name!!)
 //                print(p0.name + " : " + p1.name + " = $r ; ")
 //                return r.sign
 //            }
 //        }
 //
-//        val compByNameAsc = Comparator<SummaryListItem>{t1, t2 ->
+//        val compByNameAsc = Comparator<SummaryItemData>{t1, t2 ->
 //            return@Comparator t1.name!!.compareTo(t2.name!!)
 //        }
-//        val compByNameDesc = Comparator<SummaryListItem>{t1, t2 ->
+//        val compByNameDesc = Comparator<SummaryItemData>{t1, t2 ->
 //            val r = t2.name!!.compareTo(t1.name!!)
 //            print(t1.name + " : " + t2.name + " = $r ; ")
 //            return@Comparator r.sign
 //        }
 
-        fun compByCol(col: Int): Comparator<SummaryListItem> {
-            val comp = Comparator<SummaryListItem>{t1, t2 ->
+        fun compByCol(col: Int): Comparator<SummaryItemData> {
+            val comp = Comparator<SummaryItemData> { t1, t2 ->
                 return@Comparator getSortResult(t1,t2,col)
             }
             return comp

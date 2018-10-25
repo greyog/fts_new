@@ -1,14 +1,13 @@
 apply plugin: 'com.android.application'
-
 apply plugin: 'kotlin-android'
-
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 //apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion 26
     defaultConfig {
-        applicationId "com.greyogproducts.greyog.fts3"
+        applicationId 'com.greyogproducts.greyog.fts'
         minSdkVersion 15
         targetSdkVersion 26
         versionCode 20
@@ -22,6 +21,9 @@ android {
         }
     }
     productFlavors {
+    }
+    dataBinding {
+        enabled = true
     }
 }
 
@@ -42,6 +44,7 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.11.2'
     implementation 'pl.droidsonroids:jspoon:1.0.0'
     implementation 'pl.droidsonroids.retrofit2:converter-jspoon:1.0.0'
+    implementation "android.arch.lifecycle:extensions:1.1.1"
     //    implementation 'com.google.firebase:firebase-ads:17.0.0'
     //    implementation 'com.google.firebase:firebase-core:16.0.4'
     //    implementation 'com.google.android.gms:play-services-ads:17.0.0'

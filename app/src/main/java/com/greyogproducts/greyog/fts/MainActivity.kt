@@ -1,10 +1,11 @@
-package com.greyogproducts.greyog.fts3
+package com.greyogproducts.greyog.fts
 
 import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.support.design.widget.TabLayout
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
@@ -13,7 +14,9 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.SearchView
 import android.view.*
 import android.widget.Toast
-import com.greyogproducts.greyog.fts3.RetrofitHelper.OnSearchResponseListener
+import com.greyogproducts.greyog.fts.data.SearchResponseResult
+import com.greyogproducts.greyog.fts.data.SummaryItemData
+import com.greyogproducts.greyog.fts.model.RetrofitHelper.OnSearchResponseListener
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.auto_update_layout.view.*
 import kotlinx.android.synthetic.main.fragment_main.view.*
@@ -21,8 +24,9 @@ import java.util.*
 
 class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteractionListener, OnSearchResponseListener {
     private lateinit var mSearchAutoComplete: SearchView.SearchAutoComplete
+
     @SuppressLint("RestrictedApi")
-    override fun onSearchResponse(response: MyResponseResult?) {
+    override fun onSearchResponse(response: SearchResponseResult?) {
 //        val respList = response?.all?.size?.let { it -> List(it) {"${response.all[it].symbol} - ${response.all[it].transName}"} }
 //        println("onSearchResponse: ${response?.all}")
 //        val adptr = respList?.let { SuggestionAdapter(this, it) }
@@ -30,11 +34,9 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
         mSearchAutoComplete.setAdapter(adptr)
         mSearchAutoComplete.threshold = 1
         mSearchAutoComplete.showDropDown()
-
-
     }
 
-    override fun onListFragmentInteraction(item: SummaryListItem?) {
+    override fun onListFragmentInteraction(item: SummaryItemData?) {
         println("not implemented yet")
     }
 
@@ -47,12 +49,6 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
      * [android.support.v4.app.FragmentStatePagerAdapter].
      */
     private var mSectionsPagerAdapter: SectionsPagerAdapter? = null
-
-    override fun onResume() {
-        super.onResume()
-        RetrofitHelper.instance.doSummaryRequest()
-    }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,16 +63,19 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
         // Set up the ViewPager with the sections adapter.
         container.adapter = mSectionsPagerAdapter
 
-//        container.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabs))
-//        tabs.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(container))
+        container.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabs))
+        tabs.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(container))
 
 //        fab.visibility = View.VISIBLE
         fab.setOnClickListener { view ->
             launchTestDetails()
 //            showInterstitial()
         }
+
+//        setting up summary view model
+
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        RetrofitHelper.instance.prefs = prefs
+//        RetrofitHelper.instance.prefs = prefs
 
     }
 
@@ -116,14 +115,15 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
         val mSearch = menu.findItem(R.id.app_bar_search).actionView as SearchView
-        RetrofitHelper.instance.onSearchResponseListener = this
+//        RetrofitHelper.instance.onSearchResponseListener = this
         mSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return false
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                RetrofitHelper.instance.doSearchRequest(newText ?: "")
+//                TODO()
+//                RetrofitHelper.instance.doSearchRequest(newText ?: "")
 
                 return false
             }
@@ -151,7 +151,7 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
                 println("saved $idSet")
                 Toast.makeText(this, "Added element $itemName to list.", Toast.LENGTH_SHORT).show()
                 mSearchAutoComplete.showDropDown()
-                RetrofitHelper.instance.doSummaryRequest()
+//                RetrofitHelper.instance.doSummaryRequest(listener)
             }
         }
 //        menu.findItem(R.id.menu_item_share).also {
@@ -311,7 +311,7 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
 
         override fun getCount(): Int {
             // Show 3 total pages.
-            return 1
+            return 4
         }
     }
 
@@ -332,7 +332,7 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
              * The fragment argument representing the section number for this
              * fragment.
              */
-            private const val ARG_SECTION_NUMBER = "section_number"
+            const val ARG_SECTION_NUMBER = "section_number"
             private val fragments = ArrayList<Fragment>()
 
 
@@ -344,7 +344,7 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
                 if (fragments.size > sectionNumber) return fragments[sectionNumber]
                 val args = Bundle()
                 args.putInt(ARG_SECTION_NUMBER, sectionNumber)
-                val fragment = if (sectionNumber == 0) SummaryFragment.newInstance(3)
+                val fragment = if (sectionNumber == 0) SummaryFragment.newInstance(4)
                 else PlaceholderFragment()
                 fragment.arguments = args
                 fragments.add(fragment)

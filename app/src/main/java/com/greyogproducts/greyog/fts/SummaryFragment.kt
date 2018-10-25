@@ -1,5 +1,7 @@
-package com.greyogproducts.greyog.fts3
+package com.greyogproducts.greyog.fts
 
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
@@ -13,6 +15,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
+import com.greyogproducts.greyog.fts.MainActivity.PlaceholderFragment.Companion.ARG_SECTION_NUMBER
+import com.greyogproducts.greyog.fts.data.SummaryItemData
+import com.greyogproducts.greyog.fts.data.SummaryListData
 import kotlinx.android.synthetic.main.fragment_pair_list.*
 import kotlinx.android.synthetic.main.fragment_pair_list.view.*
 import kotlinx.android.synthetic.main.simple_text_view.view.*
@@ -23,25 +28,36 @@ import java.sql.Timestamp
  * Activities containing this fragment MUST implement the
  * [SummaryFragment.OnListFragmentInteractionListener] interface.
  */
-class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefreshLayout.OnRefreshListener {
+class SummaryFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
 
-//    override fun onSearchResponse(response: MyResponseResult?) {
-//        println("onSearchResponse: response = $response")
-//        searchAdapter.setNewData(response)
-//    }
+    private val viewModel: SummaryListViewModel by lazy {
+        println("viewModel create")
+        ViewModelProviders.of(this).get(SummaryListViewModel::class.java)
+    }
+
+    private val itemsChangeObserver =
+            Observer<SummaryListData> {
+                if (it != null) {
+//                    mItems = it.items
+//                    mColumns = it.columns
+                    onSummaryResponse(it.columns, it.items)
+                }
+            }
 
     override fun onRefresh() {
         srLayout.isRefreshing = true
-        RetrofitHelper.instance.doSummaryRequest()
+        viewModel.refresh(tabNum)
     }
 
     private var mColumns = ArrayList<String>()
 
-    private var mItems = ArrayList<SummaryListItem>()
+    private var mItems = ArrayList<SummaryItemData>()
 
     private lateinit var mPrefs: SharedPreferences
 
-    override fun onSummaryResponse(columns: ArrayList<String>, items: ArrayList<SummaryListItem>) {
+    private var tabNum = 0
+
+    private fun onSummaryResponse(columns: ArrayList<String>, items: ArrayList<SummaryItemData>) {
         mItems = items
         val newAdapter = MyPairRecyclerViewAdapter(mPrefs, mItems, listener)
         activity.runOnUiThread {
@@ -60,43 +76,30 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefr
                 it.title = getString(R.string.last_update)
                 it.subtitle = Timestamp(System.currentTimeMillis()).toString()
             }
-//            (activity as MainActivity).supportActionBar?.customView = activity.layoutInflater.inflate(R.layout.action_bar_layout, null)
-//            (activity as MainActivity).supportActionBar?.customView?.findViewById<TextView>(R.id.tv_timestamp).also {
-//                it?.text = Timestamp(System.currentTimeMillis()).toString()
-//            }
         }
 
     }
 
-    override fun onBadSessId() {
-        Toast.makeText(context,"BAD CONNECTION!", Toast.LENGTH_SHORT).show()
-    }
+//    private fun onBadSessId() {
+//        Toast.makeText(context,"BAD CONNECTION!", Toast.LENGTH_SHORT).show()
+//    }
+//
+//    private fun onHappySessId() {
+//        Toast.makeText(context,"Connection OK", Toast.LENGTH_SHORT).show()
+//        srLayout.isRefreshing = true
+//        RetrofitHelper.instance.doSummaryRequest(listener)
+//    }
 
-    override fun onHappySessId() {
-        Toast.makeText(context,"Connection OK", Toast.LENGTH_SHORT).show()
-        srLayout.isRefreshing = true
-        RetrofitHelper.instance.doSummaryRequest()
-    }
-
-    override fun onResponse(responseResult: MyResponseResult?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-
-    // TODO: Customize parameters
-    private var columnCount = 1
     private lateinit var llColumns : LinearLayout
     private lateinit var srLayout: SwipeRefreshLayout
 
     private var listener: OnListFragmentInteractionListener? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
         mPrefs = PreferenceManager.getDefaultSharedPreferences(context)
-
-        arguments?.let {
-            columnCount = it.getInt(ARG_COLUMN_COUNT)
-        }
+        viewModel.data.observe(this, itemsChangeObserver)
+        tabNum = arguments.getInt(ARG_SECTION_NUMBER)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -105,25 +108,25 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefr
         srLayout = view.swipeContainer
         srLayout.setOnRefreshListener(this)
         llColumns = view.llColumns
-//        searchAdapter = SearchListViewAdapter(this.context,null)
-//        view.lvSearch.adapter = searchAdapter
 
-
-        RetrofitHelper.instance.onResponseListener = this
+        onRefresh()
         return view
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+        println("sumfrag.onAttach")
         if (context is OnListFragmentInteractionListener) {
             listener = context
         } else {
             throw RuntimeException(context.toString() + " must implement OnListFragmentInteractionListener")
         }
+
     }
 
     override fun onDetach() {
         super.onDetach()
+        println("sumfrag.onDetach")
         listener = null
     }
 
@@ -140,7 +143,7 @@ class SummaryFragment : Fragment(), RetrofitHelper.OnResponseListener, SwipeRefr
      */
     interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        fun onListFragmentInteraction(item: SummaryListItem?)
+        fun onListFragmentInteraction(item: SummaryItemData?)
     }
 
     fun showSortDialog() {
