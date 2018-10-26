@@ -98,8 +98,7 @@ class SummaryFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         mPrefs = PreferenceManager.getDefaultSharedPreferences(context)
-        viewModel.data.observe(this, itemsChangeObserver)
-        tabNum = arguments.getInt(ARG_SECTION_NUMBER)
+        viewModel.dataMap[tabNum]?.observe(this, itemsChangeObserver)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -108,6 +107,7 @@ class SummaryFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
         srLayout = view.swipeContainer
         srLayout.setOnRefreshListener(this)
         llColumns = view.llColumns
+        tabNum = arguments.getInt(ARG_SECTION_NUMBER)
 
         onRefresh()
         return view

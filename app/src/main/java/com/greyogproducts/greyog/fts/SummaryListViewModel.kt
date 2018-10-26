@@ -7,14 +7,19 @@ import com.greyogproducts.greyog.fts.model.SummaryListModel
 
 class SummaryListViewModel : ViewModel(), LifecycleObserver {
     private val model = SummaryListModel()
-    val data = MutableLiveData<SummaryListData>()
+    val dataMap = emptyMap<Int, MutableLiveData<SummaryListData>>().toMutableMap()
+
     val isLoading = MutableLiveData<Boolean>()
 
     fun refresh(tabNum: Int) {
+        val data: MutableLiveData<SummaryListData> = if (dataMap.contains(tabNum)) dataMap[tabNum]!! else {
+            dataMap[tabNum] = MutableLiveData()
+            dataMap[tabNum]!!
+        }
         isLoading.value = true
         model.refreshData(tabNum, object : OnSummaryListDataReadyCallback {
             override fun onDataReady(out: SummaryListData) {
-                println("SViewModel.onDataReady")
+                println("SViewModel.onDataReady for tab $tabNum")
                 isLoading.postValue(false)
                 data.postValue(out)
             }
