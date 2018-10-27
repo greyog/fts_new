@@ -18,6 +18,7 @@ import android.widget.Toast
 import com.greyogproducts.greyog.fts.MainActivity.PlaceholderFragment.Companion.ARG_SECTION_NUMBER
 import com.greyogproducts.greyog.fts.data.SummaryItemData
 import com.greyogproducts.greyog.fts.data.SummaryListData
+import com.greyogproducts.greyog.fts.vm.SummaryListViewModel
 import kotlinx.android.synthetic.main.fragment_pair_list.*
 import kotlinx.android.synthetic.main.fragment_pair_list.view.*
 import kotlinx.android.synthetic.main.simple_text_view.view.*
@@ -46,7 +47,7 @@ class SummaryFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
 
     override fun onRefresh() {
         srLayout.isRefreshing = true
-        viewModel.refresh(tabNum)
+        viewModel.refreshSummaryList(tabNum)
     }
 
     private var mColumns = ArrayList<String>()

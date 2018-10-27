@@ -41,4 +41,6 @@ Greyog App Products, Fusion Media and Investing.com will not accept any liabilit
     <string name="tab_text_2">Stock</string>
     <string name="tab_text_3">Indices</string>
     <string name="tab_text_4">Commodities</string>
+    <string name="connection_ok">Connection OK</string>
+    <string name="connection_error">Connection ERROR</string>
 </resources>

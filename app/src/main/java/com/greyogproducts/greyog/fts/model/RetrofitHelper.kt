@@ -35,17 +35,56 @@ class RetrofitHelper {
                 instance.doTechRequest(object : OnTechRequestCallBack {
                     override fun onHappySessId() {
                         println("CONNECTION OK, now requesting data...")
+                        listener.onConnectionOk()
                         instance.doSummaryRequest(tabNum, listener)
                     }
 
                     override fun onBadSessId() {
                         println("NO CONNECTION!")
-//                        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                        listener.onConnectionError()
                     }
 
                 })
             } else
                 instance.doSummaryRequest(tabNum, listener)
+        }
+
+        fun requestSingleItemData(pairId: String, period: String, listener: OnResponsePairDataCallback) {
+            if (instance.phpSessId == null) {
+                instance.doTechRequest(object : OnTechRequestCallBack {
+                    override fun onHappySessId() {
+                        println("CONNECTION OK, now requesting data...")
+                        listener.onConnectionOk()
+                        instance.doSinglePairRequest(pairId, period, listener)
+                    }
+
+                    override fun onBadSessId() {
+                        println("NO CONNECTION!")
+                        listener.onConnectionError()
+                    }
+
+                })
+            } else
+                instance.doSinglePairRequest(pairId, period, listener)
+        }
+
+        fun requestSearchData(text: String, listener: OnSearchResponseListener) {
+            if (instance.phpSessId == null) {
+                instance.doTechRequest(object : OnTechRequestCallBack {
+                    override fun onHappySessId() {
+                        println("CONNECTION OK, now requesting data...")
+                        listener.onConnectionOk()
+                        instance.doSearchRequest(text, listener)
+                    }
+
+                    override fun onBadSessId() {
+                        println("NO CONNECTION!")
+                        listener.onConnectionError()
+                    }
+
+                })
+            } else
+                instance.doSearchRequest(text, listener)
         }
     }
 
@@ -54,17 +93,22 @@ class RetrofitHelper {
     private var stickySess: String? = null
     //    private var preferences: SharedPreferences? = null
 //    private var onResponseListener: OnResponseListener? = null
-    private var onResponsePairDataListener: OnResponsePairDataListener? = null
-    private var onSearchResponseListener: OnSearchResponseListener? = null
+//    private var onResponsePairDataListener: OnResponsePairDataCallback? = null
+//    private var onSearchResponseListener: OnSearchResponseListener? = null
     private var prefs: SharedPreferences? = null
 
-    interface OnResponsePairDataListener {
-        fun onResponseTechData(period: String, raw: String)
+    interface OnResponsePairDataCallback : MyResponseCallback {
+        fun onDataReady(period: String, raw: String)
     }
 
-    interface OnResponseListener {
+    interface OnResponseListener : MyResponseCallback {
         //        fun onResponse(responseResult: SearchResponseResult?)
         fun onSummaryResponse(columns: ArrayList<String>, items: ArrayList<SummaryItemData>)
+    }
+
+    interface MyResponseCallback {
+        fun onConnectionError()
+        fun onConnectionOk()
     }
 
     interface OnTechRequestCallBack {
@@ -72,7 +116,7 @@ class RetrofitHelper {
         fun onBadSessId()
     }
 
-    interface OnSearchResponseListener {
+    interface OnSearchResponseListener : MyResponseCallback {
         fun onSearchResponse(response: SearchResponseResult?)
     }
 
@@ -269,7 +313,8 @@ class RetrofitHelper {
 //        })
 //    }
 
-    fun doSinglePairRequest(pairId: String, period: String) {
+    private fun doSinglePairRequest(pairId: String, period: String, listener: OnResponsePairDataCallback) {
+
         println("doSinglePairRequest: pair= $pairId, period= $period")
         if (phpSessId == null) {
             println("doRequest: no phpSessID found")
@@ -295,9 +340,9 @@ class RetrofitHelper {
                 if (!response.isSuccessful) {
                     println("onResponse: " + response.message())
                 } else {
-//                    println("onResponseTechData: ok " + response.headers().values("Set-Cookie"))
+//                    println("onDataReady: ok " + response.headers().values("Set-Cookie"))
                     try {
-                        onResponsePairDataListener?.onResponseTechData(period, response.body()!!.string())
+                        listener.onDataReady(period, response.body()!!.string())
                         //                        println("onResponse: ok "+ response.body().string());
                     } catch (e: IOException) {
                         e.printStackTrace()
@@ -346,7 +391,9 @@ class RetrofitHelper {
                 it.edit().putStringSet("pairs", defPairs).apply()
             c += it.getStringSet("pairs", defPairs) //, "11", "12", "13", "169", "166", "14958", "20", "172", "27", "167", "168", "178", "171", "17940")
         }
-        println("pairs to load: $c")
+        println("periods: $p")
+        println("pairs: $c")
+        if (p.isEmpty()) p.addAll(defPeriods)
         if (c.isEmpty()) c.addAll(defPairs)
         val call = server.getSummaryTable("forex", p, "false", c)
         call.enqueue(object : Callback<RawSummaryResponseResult> {
@@ -367,7 +414,7 @@ class RetrofitHelper {
         })
     }
 
-    fun doSearchRequest(text: String) {
+    private fun doSearchRequest(text: String, listener: OnSearchResponseListener) {
         if (phpSessId == null) {
             println("doRequest: no phpSessID found")
             return
@@ -385,7 +432,7 @@ class RetrofitHelper {
         call.enqueue(object : Callback<SearchResponseResult> {
             override fun onResponse(call: Call<SearchResponseResult>, response: Response<SearchResponseResult>) {
                 if (response.isSuccessful) {
-                    onSearchResponseListener?.onSearchResponse(response.body())
+                    listener.onSearchResponse(response.body())
                 }else {
                     println("onSearchResponse: ${response.message()}")
                 }

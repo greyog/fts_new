@@ -1,5 +1,7 @@
 package com.greyogproducts.greyog.fts
 
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
@@ -13,11 +15,10 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.TableLayout
-import android.widget.TableRow
-import android.widget.TextView
-import com.greyogproducts.greyog.fts.model.RetrofitHelper
+import android.widget.*
+import com.greyogproducts.greyog.fts.data.SinglePairData
+import com.greyogproducts.greyog.fts.vm.ConnectionState
+import com.greyogproducts.greyog.fts.vm.SummSingleViewModel
 import kotlinx.android.synthetic.main.activity_tabs.*
 import kotlinx.android.synthetic.main.fragment_tabs.*
 import org.jsoup.Jsoup
@@ -39,7 +40,7 @@ class DetailsActivity : AppCompatActivity() {
     private lateinit var mPairId: String
     private lateinit var mPairName: String
     private val tabTitles = listOf("5MIN", "15MIN", "1H", "5H", "DAY", "WEEK", "MONTH")
-    val periods = listOf("300", "900",  "3600" ,"18000","86400", "week", "month")
+//    val periods = listOf("300", "900",  "3600" ,"18000","86400", "week", "month")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,18 +99,13 @@ class DetailsActivity : AppCompatActivity() {
      * A [FragmentPagerAdapter] that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
-    inner class SectionsPagerAdapter(fm: FragmentManager) : FragmentPagerAdapter(fm), RetrofitHelper.OnResponsePairDataListener {
-        override fun onResponseTechData(period: String, raw: String) {
-            val retPos = periods.indexOf(period)
-            fragments[retPos]?.setTechData(raw)
-        }
+    inner class SectionsPagerAdapter(fm: FragmentManager) : FragmentPagerAdapter(fm) {
+//        override fun onResponseData(period: String, raw: String) {
+//            val retPos = periods.indexOf(period)
+//            fragments[retPos]?.setTechData(raw)
+//        }
 
         private val fragments = emptyMap<Int, PlaceholderFragment>().toMutableMap()
-        init {
-//            RetrofitHelper.instance.onResponsePairDataListener = this
-//            TODO
-        }
-
 
         override fun getItem(position: Int): Fragment {
             // getItem is called to instantiate the fragment for the given page.
@@ -124,16 +120,27 @@ class DetailsActivity : AppCompatActivity() {
             return tabTitles.size
         }
 
-//        override fun getPageTitle(position: Int): CharSequence {
-//            return tabTitles[position]
-//        }
     }
 
     /**
      * A placeholder fragment containing a simple view.
      */
     class PlaceholderFragment : Fragment() {
-        fun setTechData(txt: String?) {
+
+        private val viewModel: SummSingleViewModel by lazy {
+            println("viewModel create")
+            ViewModelProviders.of(this).get(SummSingleViewModel::class.java)
+        }
+
+        private val itemsChangeObserver =
+                Observer<SinglePairData> {
+                    if (it != null) {
+                        setTechData(it.raw)
+                    }
+                }
+
+
+        private fun setTechData(txt: String?) {
             val doc = Jsoup.parse(txt)
             val summaryElement = doc.getElementById("techStudiesInnerWrap")
             val sumStr = summaryElement.selectFirst(".summary")
@@ -252,7 +259,24 @@ class DetailsActivity : AppCompatActivity() {
         private var pairName: String? = null
 
         private var secNum: Int? = null
-        private val periods = listOf("300", "900",  "3600" ,"18000","86400", "week", "month")
+        override fun onActivityCreated(savedInstanceState: Bundle?) {
+            super.onActivityCreated(savedInstanceState)
+            viewModel.dataMap[secNum]?.observe(this, itemsChangeObserver)
+            viewModel.isLoading.observe(this, Observer<ConnectionState> {
+                when (it) {
+                    ConnectionState.OK -> Toast.makeText(this.context, getString(R.string.connection_ok), Toast.LENGTH_SHORT).show()
+                    ConnectionState.ERROR -> Toast.makeText(this.context, getString(R.string.connection_error), Toast.LENGTH_SHORT).show()
+                    ConnectionState.LOADING -> {
+                        println("loading for pair $pair - $pairName, tab $secNum")
+                        single_data_progress_bar.visibility = View.VISIBLE
+                    }
+                    ConnectionState.LOADED -> {
+                        println("loaded for pair $pair - $pairName, tab $secNum")
+                        single_data_progress_bar.visibility = View.GONE
+                    }
+                }
+            })
+        }
 
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                   savedInstanceState: Bundle?): View? {
@@ -262,9 +286,8 @@ class DetailsActivity : AppCompatActivity() {
             pairName = arguments?.getString(ARG_PAIR_NAME)
             secNum = arguments?.getInt(ARG_SECTION_NUMBER)
             if (pair != null && secNum !=null) {
-                TODO()
-//                RetrofitHelper.instance.doSinglePairRequest(pair!!,periods[secNum!!])
-//                println("createView: section = $secNum, pair = $pair, period = ${periods[secNum!!]}")
+                viewModel.pairID = pair as String
+                viewModel.refreshData(secNum!!)
             }
             return rootView
         }

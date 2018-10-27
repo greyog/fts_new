@@ -137,21 +137,23 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
             val idSet = prefs.getStringSet("pairs", emptSet)
             val itemId = (mSearchAutoComplete.adapter as SuggestionAdapter).getItemPairId(i)
             val itemName = (mSearchAutoComplete.adapter as SuggestionAdapter).getItem(i)
-            if (idSet.contains(itemId)) {
-                Toast.makeText(this, "Already exists.", Toast.LENGTH_SHORT).show()
-                mSearchAutoComplete.showDropDown()
-            } else if (idSet.size >= 20)
-                Toast.makeText(this, "Too many elements! Delete something before add.", Toast.LENGTH_SHORT).show()
-            else {
-                idSet.plusAssign(itemId)
-                val newSet = setOf<String>().toMutableSet()
-                newSet.addAll(idSet)
-                prefs.edit().remove("pairs").apply()
-                prefs.edit().putStringSet("pairs",newSet).apply()
-                println("saved $idSet")
-                Toast.makeText(this, "Added element $itemName to list.", Toast.LENGTH_SHORT).show()
-                mSearchAutoComplete.showDropDown()
-//                RetrofitHelper.instance.doSummaryRequest(listener)
+            when {
+                idSet.contains(itemId) -> {
+                    Toast.makeText(this, "Already exists.", Toast.LENGTH_SHORT).show()
+                    mSearchAutoComplete.showDropDown()
+                }
+                idSet.size >= 20 -> Toast.makeText(this, "Too many elements! Delete something before add.", Toast.LENGTH_SHORT).show()
+                else -> {
+                    idSet.plusAssign(itemId)
+                    val newSet = setOf<String>().toMutableSet()
+                    newSet.addAll(idSet)
+                    prefs.edit().remove("pairs").apply()
+                    prefs.edit().putStringSet("pairs", newSet).apply()
+                    println("saved $idSet")
+                    Toast.makeText(this, "Added element $itemName to list.", Toast.LENGTH_SHORT).show()
+                    mSearchAutoComplete.showDropDown()
+                    //                RetrofitHelper.instance.doSummaryRequest(listener)
+                }
             }
         }
 //        menu.findItem(R.id.menu_item_share).also {
