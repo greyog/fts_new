@@ -1,10 +1,14 @@
 package com.greyogproducts.greyog.fts.model
 
+import android.content.SharedPreferences
 import com.greyogproducts.greyog.fts.data.SummaryItemData
 import com.greyogproducts.greyog.fts.data.SummaryListData
 
-class MyModel {
+class MyModel(preferences: SharedPreferences) {
 
+    init {
+        RetrofitHelper.preferences = preferences
+    }
     fun refreshSummaryListData(tabNum: Int, callback: OnSummaryListDataReadyCallback) {
 
         RetrofitHelper.requestSummaryList(tabNum, object : RetrofitHelper.OnResponseListener {
@@ -13,7 +17,7 @@ class MyModel {
             override fun onConnectionError() = callback.onConnectionError()
 
             override fun onSummaryResponse(columns: ArrayList<String>, items: ArrayList<SummaryItemData>) {
-                println("MyModel.onSummaryResponse")
+//                println("MyModel.onSummaryResponse, data: $items")
                 callback.onDataReady(SummaryListData(columns, items))
             }
         })

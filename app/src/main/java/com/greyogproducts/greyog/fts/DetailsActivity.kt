@@ -128,7 +128,7 @@ class DetailsActivity : AppCompatActivity() {
     class PlaceholderFragment : Fragment() {
 
         private val viewModel: SummSingleViewModel by lazy {
-            println("viewModel create")
+            println("details Activity fragment viewModel create")
             ViewModelProviders.of(this).get(SummSingleViewModel::class.java)
         }
 

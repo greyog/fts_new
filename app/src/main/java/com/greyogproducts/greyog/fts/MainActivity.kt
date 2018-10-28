@@ -1,6 +1,8 @@
 package com.greyogproducts.greyog.fts
 
 import android.annotation.SuppressLint
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
@@ -13,28 +15,17 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.SearchView
 import android.view.*
-import android.widget.Toast
 import com.greyogproducts.greyog.fts.data.SearchResponseResult
 import com.greyogproducts.greyog.fts.data.SummaryItemData
-import com.greyogproducts.greyog.fts.model.RetrofitHelper.OnSearchResponseListener
+import com.greyogproducts.greyog.fts.vm.SearchViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.auto_update_layout.view.*
 import kotlinx.android.synthetic.main.fragment_main.view.*
 import java.util.*
 
-class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteractionListener, OnSearchResponseListener {
-    private lateinit var mSearchAutoComplete: SearchView.SearchAutoComplete
+class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteractionListener {
 
-    @SuppressLint("RestrictedApi")
-    override fun onSearchResponse(response: SearchResponseResult?) {
-//        val respList = response?.all?.size?.let { it -> List(it) {"${response.all[it].symbol} - ${response.all[it].transName}"} }
-//        println("onSearchResponse: ${response?.all}")
-//        val adptr = respList?.let { SuggestionAdapter(this, it) }
-        val adptr = response?.all?.let { SuggestionAdapter(this, it) }
-        mSearchAutoComplete.setAdapter(adptr)
-        mSearchAutoComplete.threshold = 1
-        mSearchAutoComplete.showDropDown()
-    }
+    private lateinit var mSearchAutoComplete: SearchView.SearchAutoComplete
 
     override fun onListFragmentInteraction(item: SummaryItemData?) {
         println("not implemented yet")
@@ -74,9 +65,8 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
 
 //        setting up summary view model
 
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-//        RetrofitHelper.instance.prefs = prefs
-
+//        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+//        viewModel.preferences = prefs
     }
 
     private fun launchTestDetails() {
@@ -111,20 +101,33 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
 
 //    private var mShareActionProvider: ShareActionProvider? = null
 
+    private val viewModel: SearchViewModel by lazy {
+        ViewModelProviders.of(this).get(SearchViewModel::class.java)
+    }
+
+    @SuppressLint("RestrictedApi")
+    private val searchResultObserver =
+            Observer<SearchResponseResult> { response ->
+                val adptr = response?.all?.let { SuggestionAdapter(this, it) }
+                mSearchAutoComplete.setAdapter(adptr)
+                mSearchAutoComplete.threshold = 1
+                mSearchAutoComplete.showDropDown()
+            }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
+        viewModel.searchData.observe(this, searchResultObserver)
         val mSearch = menu.findItem(R.id.app_bar_search).actionView as SearchView
-//        RetrofitHelper.instance.onSearchResponseListener = this
         mSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return false
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-//                TODO()
-//                RetrofitHelper.instance.doSearchRequest(newText ?: "")
-
+                if (newText != null) {
+                    viewModel.searchFor(newText)
+                }
                 return false
             }
 
@@ -132,29 +135,11 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
         mSearchAutoComplete  = mSearch.findViewById(android.support.v7.appcompat.R.id.search_src_text)
         mSearchAutoComplete.setOnItemClickListener { adapterView, view, i, l ->
 //            Toast.makeText(this, (mSearchAutoComplete.adapter as SuggestionAdapter).getItemPairId(position = i), Toast.LENGTH_SHORT).show()
-            val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-            val emptSet = emptySet<String>().toMutableSet()
-            val idSet = prefs.getStringSet("pairs", emptSet)
             val itemId = (mSearchAutoComplete.adapter as SuggestionAdapter).getItemPairId(i)
-            val itemName = (mSearchAutoComplete.adapter as SuggestionAdapter).getItem(i)
-            when {
-                idSet.contains(itemId) -> {
-                    Toast.makeText(this, "Already exists.", Toast.LENGTH_SHORT).show()
-                    mSearchAutoComplete.showDropDown()
-                }
-                idSet.size >= 20 -> Toast.makeText(this, "Too many elements! Delete something before add.", Toast.LENGTH_SHORT).show()
-                else -> {
-                    idSet.plusAssign(itemId)
-                    val newSet = setOf<String>().toMutableSet()
-                    newSet.addAll(idSet)
-                    prefs.edit().remove("pairs").apply()
-                    prefs.edit().putStringSet("pairs", newSet).apply()
-                    println("saved $idSet")
-                    Toast.makeText(this, "Added element $itemName to list.", Toast.LENGTH_SHORT).show()
-                    mSearchAutoComplete.showDropDown()
-                    //                RetrofitHelper.instance.doSummaryRequest(listener)
-                }
-            }
+//            val itemName = (mSearchAutoComplete.adapter as SuggestionAdapter).getItem(i)
+            val tabFragment = (mSectionsPagerAdapter?.currentFragment as SummaryFragment)
+            tabFragment.viewModel.addItemToList(itemId)
+            tabFragment.onRefresh()
         }
 //        menu.findItem(R.id.menu_item_share).also {
 //            mShareActionProvider = MenuItemCompat.getActionProvider(it) as? ShareActionProvider
@@ -300,9 +285,9 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
     inner class SectionsPagerAdapter(fm: FragmentManager) : FragmentPagerAdapter(fm) {
         var currentFragment: Fragment? = null
 
-        override fun setPrimaryItem(container: ViewGroup?, position: Int, `object`: Any?) {
-            if (currentFragment != `object`) currentFragment = `object` as Fragment?
-            super.setPrimaryItem(container, position, `object`)
+        override fun setPrimaryItem(container: ViewGroup?, position: Int, obj: Any?) {
+            if (currentFragment != obj) currentFragment = obj as Fragment?
+            super.setPrimaryItem(container, position, obj)
         }
 
         override fun getItem(position: Int): Fragment {

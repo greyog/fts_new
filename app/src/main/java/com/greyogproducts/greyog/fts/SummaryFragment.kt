@@ -4,9 +4,7 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.DialogInterface
-import android.content.SharedPreferences
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.support.v4.app.Fragment
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AlertDialog
@@ -31,7 +29,7 @@ import java.sql.Timestamp
  */
 class SummaryFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
 
-    private val viewModel: SummaryListViewModel by lazy {
+    val viewModel: SummaryListViewModel by lazy {
         println("viewModel create")
         ViewModelProviders.of(this).get(SummaryListViewModel::class.java)
     }
@@ -47,22 +45,22 @@ class SummaryFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
 
     override fun onRefresh() {
         srLayout.isRefreshing = true
-        viewModel.refreshSummaryList(tabNum)
+        viewModel.refreshSummaryList()
     }
 
     private var mColumns = ArrayList<String>()
 
     private var mItems = ArrayList<SummaryItemData>()
 
-    private lateinit var mPrefs: SharedPreferences
+//    private lateinit var mPrefs: SharedPreferences
 
     private var tabNum = 0
 
     private fun onSummaryResponse(columns: ArrayList<String>, items: ArrayList<SummaryItemData>) {
         mItems = items
-        val newAdapter = MyPairRecyclerViewAdapter(mPrefs, mItems, listener)
+        val newAdapter = MyPairRecyclerViewAdapter(viewModel, mItems, listener)
         activity.runOnUiThread {
-            Toast.makeText(context,"Loaded ${items.size} items", Toast.LENGTH_SHORT).show()
+            //            Toast.makeText(context,"Loaded ${items.size} items", Toast.LENGTH_SHORT).show()
             list.adapter = newAdapter
             llColumns.removeAllViews()
             this.mColumns = columns
@@ -96,10 +94,25 @@ class SummaryFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
 
     private var listener: OnListFragmentInteractionListener? = null
 
+    private val addResultObserver =
+            Observer<SummaryListViewModel.AddItemResult> {
+                when (it) {
+                    SummaryListViewModel.AddItemResult.OK ->
+                        Toast.makeText(context, getString(R.string.added_element_to_list), Toast.LENGTH_SHORT).show()
+                    SummaryListViewModel.AddItemResult.TOO_MUCH ->
+                        Toast.makeText(context, getString(R.string.too_many_elements), Toast.LENGTH_SHORT).show()
+                    SummaryListViewModel.AddItemResult.ERROR ->
+                        Toast.makeText(context, getString(R.string.something_wrong), Toast.LENGTH_SHORT).show()
+                    SummaryListViewModel.AddItemResult.ALREADY_EXISTS ->
+                        Toast.makeText(context, getString(R.string.already_exists), Toast.LENGTH_SHORT).show()
+                }
+            }
+
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(context)
         viewModel.dataMap[tabNum]?.observe(this, itemsChangeObserver)
+        viewModel.addItemResult.observe(this, addResultObserver)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -109,6 +122,9 @@ class SummaryFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
         srLayout.setOnRefreshListener(this)
         llColumns = view.llColumns
         tabNum = arguments.getInt(ARG_SECTION_NUMBER)
+        viewModel.tabNum = tabNum
+//        mPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+//        viewModel.preferences = (mPrefs)
 
         onRefresh()
         return view
@@ -149,18 +165,15 @@ class SummaryFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
 
     fun showSortDialog() {
         val builder = AlertDialog.Builder(this.context)
-        val sort = mPrefs.getInt("sort", 1)
+        val sort = viewModel.getSortValue()
         val listener = DialogInterface.OnClickListener { dialogInterface, i ->
             var el = i
-            val prefSort = mPrefs.getInt("sort", 1)
-            println( "onClick: before i , sort = $i , $prefSort")
+            println("onClick: before i , sort = $i , $sort")
             el += 1
-            if (el == Math.abs(prefSort)) {
-                el = -prefSort
+            if (el == Math.abs(sort)) {
+                el = -sort
             }
-            mPrefs.edit().putInt("sort", el).apply()
-            println("onClick: after el = $el")
-
+            viewModel.setSortValue(el)
             (list.adapter as MyPairRecyclerViewAdapter).sortBy(el)
 
             dialogInterface.dismiss()

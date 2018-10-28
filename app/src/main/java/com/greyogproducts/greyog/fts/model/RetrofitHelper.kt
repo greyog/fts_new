@@ -29,12 +29,13 @@ class RetrofitHelper {
                 }
                 return mInstance!!
             }
+        lateinit var preferences: SharedPreferences
 
         fun requestSummaryList(tabNum: Int, listener: OnResponseListener) {
             if (instance.phpSessId == null) {
                 instance.doTechRequest(object : OnTechRequestCallBack {
                     override fun onHappySessId() {
-                        println("CONNECTION OK, now requesting data...")
+                        println("CONNECTION OK, now requesting searchData...")
                         listener.onConnectionOk()
                         instance.doSummaryRequest(tabNum, listener)
                     }
@@ -53,7 +54,7 @@ class RetrofitHelper {
             if (instance.phpSessId == null) {
                 instance.doTechRequest(object : OnTechRequestCallBack {
                     override fun onHappySessId() {
-                        println("CONNECTION OK, now requesting data...")
+                        println("CONNECTION OK, now requesting searchData...")
                         listener.onConnectionOk()
                         instance.doSinglePairRequest(pairId, period, listener)
                     }
@@ -72,7 +73,7 @@ class RetrofitHelper {
             if (instance.phpSessId == null) {
                 instance.doTechRequest(object : OnTechRequestCallBack {
                     override fun onHappySessId() {
-                        println("CONNECTION OK, now requesting data...")
+                        println("CONNECTION OK, now requesting searchData...")
                         listener.onConnectionOk()
                         instance.doSearchRequest(text, listener)
                     }
@@ -95,7 +96,7 @@ class RetrofitHelper {
 //    private var onResponseListener: OnResponseListener? = null
 //    private var onResponsePairDataListener: OnResponsePairDataCallback? = null
 //    private var onSearchResponseListener: OnSearchResponseListener? = null
-    private var prefs: SharedPreferences? = null
+//    private var prefs: SharedPreferences? = null
 
     interface OnResponsePairDataCallback : MyResponseCallback {
         fun onDataReady(period: String, raw: String)
@@ -226,7 +227,6 @@ class RetrofitHelper {
                 }
             }
             listener.onSummaryResponse(cols, itemList)
-//            println(itemList)
             return response
         }
 
@@ -245,20 +245,20 @@ class RetrofitHelper {
         call.enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 if (!response.isSuccessful) {
-                    println( "onResponse: " + response.message())
+//                    println( "onResponse: " + response.message())
                     if (triesCount <= 10) doTechRequest(listener) else unHappyId()
                 } else {
                     triesCount = 0
-                    println("onResponse: ok " + response.headers().values("Set-Cookie"))
+//                    println("onResponse: ok " + response.headers().values("Set-Cookie"))
                     for (s in response.headers().values("Set-Cookie")) {
                         if (s.toUpperCase().contains("PHPSESSID")) {
                             phpSessId = s.split("; ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
-                            println("onResponse: " + phpSessId!!)
+//                            println("onResponse: " + phpSessId!!)
 //                            preferences!!.edit().putString("phpSessID", phpSessId).apply()
                         }
                         if (s.contains("StickySession")) {
                             stickySess = s.split("; ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
-                            println("onResponse: " + stickySess!!)
+//                            println("onResponse: " + stickySess!!)
 //                            preferences!!.edit().putString("stickySess", stickySess).apply()
                         }
                     }
@@ -267,7 +267,7 @@ class RetrofitHelper {
             }
 
             private fun unHappyId() {
-                println("too many tries")
+//                println("too many tries")
                 listener.onBadSessId()
             }
 
@@ -385,21 +385,26 @@ class RetrofitHelper {
         }
         val p = setOf<String>().toMutableSet()
         val c = setOf<String>().toMutableSet()
+
+        val prefs = preferences
+        val key = "pairs$tabNum"
         prefs?.let {
             p += it.getStringSet("periods", defPeriods)
-            if (!it.contains("pairs"))
-                it.edit().putStringSet("pairs", defPairs).apply()
-            c += it.getStringSet("pairs", defPairs) //, "11", "12", "13", "169", "166", "14958", "20", "172", "27", "167", "168", "178", "171", "17940")
+            if (!it.contains(key))
+                it.edit().putStringSet(key, defPairs).apply()
+            c += it.getStringSet(key, defPairs)
+            //, "11", "12", "13", "169", "166", "14958", "20", "172", "27", "167", "168", "178", "171", "17940")
         }
-        println("periods: $p")
-        println("pairs: $c")
+
         if (p.isEmpty()) p.addAll(defPeriods)
         if (c.isEmpty()) c.addAll(defPairs)
+        println("periods: $p")
+        println("pairs: $c")
         val call = server.getSummaryTable("forex", p, "false", c)
         call.enqueue(object : Callback<RawSummaryResponseResult> {
             override fun onResponse(call: Call<RawSummaryResponseResult>, responseRaw: Response<RawSummaryResponseResult>) {
                 if (responseRaw.isSuccessful) {
-//                    all data processes at response interceptor
+//                    all searchData processes at response interceptor
                     //                    println("onResponse: ok, response : " + response.headers().toMultimap().toString());
                     //                    println("onResponse: body : " + response.body().toString());
 //                    onResponseListener?.onSummaryResponse(response.body())

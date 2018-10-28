@@ -4,7 +4,6 @@ package com.greyogproducts.greyog.fts
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.SharedPreferences
 import android.graphics.Color
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.RecyclerView
@@ -16,6 +15,7 @@ import android.widget.TextView
 import com.greyogproducts.greyog.fts.SummaryFragment.OnListFragmentInteractionListener
 import com.greyogproducts.greyog.fts.data.SummaryItemData
 import com.greyogproducts.greyog.fts.dummy.DummyContent.DummyItem
+import com.greyogproducts.greyog.fts.vm.SummaryListViewModel
 import kotlinx.android.synthetic.main.fragment_pair.view.*
 import kotlinx.android.synthetic.main.simple_text_view.view.*
 import java.util.*
@@ -27,7 +27,7 @@ import kotlin.math.sign
  * [RecyclerView.Adapter] that can display a [DummyItem] and makes a call to the
  * specified [OnListFragmentInteractionListener].
  */
-class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
+class MyPairRecyclerViewAdapter(private val viewModel: SummaryListViewModel,
                                 items: ArrayList<SummaryItemData>?,
                                 private val mListener: OnListFragmentInteractionListener?)
     : RecyclerView.Adapter<MyPairRecyclerViewAdapter.ViewHolder>() {
@@ -36,7 +36,7 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
 
     private val mOnClickListener: View.OnClickListener
     private val sort : Int
-        get() = mPrefs.getInt("sort", 1)
+        get() = viewModel.getSortValue()
     private var mValues: MutableList<SummaryItemData>
 
     init {
@@ -117,9 +117,7 @@ class MyPairRecyclerViewAdapter(private val mPrefs: SharedPreferences,
 //                    println("mValues[ind] = "+mValues[ind])
                             mValues.removeAt(ind)
                             notifyItemRemoved(ind)
-                            val idSet = List(mValues.size) { mValues[it].pid }.toMutableSet()
-                            println("idset= $idSet")
-                            mPrefs.edit().putStringSet("pairs", idSet).apply()
+                            viewModel.deleteFromList(itemId.toString())
                         }
                         0 -> { //view details action
                             val itemName = h.tvPDesc.text

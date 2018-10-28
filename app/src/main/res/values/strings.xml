@@ -43,4 +43,8 @@ Greyog App Products, Fusion Media and Investing.com will not accept any liabilit
     <string name="tab_text_4">Commodities</string>
     <string name="connection_ok">Connection OK</string>
     <string name="connection_error">Connection ERROR</string>
+    <string name="added_element_to_list">Added element to list.</string>
+    <string name="too_many_elements">Too many elements! Delete something before add.</string>
+    <string name="something_wrong">Something went wrong.</string>
+    <string name="already_exists">Already exists.</string>
 </resources>

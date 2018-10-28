@@ -33,7 +33,7 @@
             </intent-filter>
         </activity>
 
-        <!--<meta-data-->
+        <!--<meta-searchData-->
             <!--android:name="com.google.android.gms.ads.APPLICATION_ID"-->
             <!--android:value="ca-app-pub-7481139450301121~7017797434" />-->
 
