@@ -20,6 +20,7 @@ import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.InterstitialAd
 import com.google.android.gms.ads.MobileAds
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.greyogproducts.greyog.fts.adapters.SuggestionAdapter
 import com.greyogproducts.greyog.fts.data.SearchResponseResult
 import com.greyogproducts.greyog.fts.data.SummaryItemData
 import com.greyogproducts.greyog.fts.vm.SearchViewModel
@@ -30,6 +31,9 @@ import java.util.*
 
 
 class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteractionListener {
+    override fun onListFragmentLongClick() {
+        showInterstitial()
+    }
 
     private lateinit var mSearchAutoComplete: SearchView.SearchAutoComplete
 
@@ -64,15 +68,22 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
         tabs.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(container))
 
 //        fab.visibility = View.VISIBLE
-        fab.setOnClickListener { view ->
+        fabNewNotification.setOnClickListener { view ->
 
             showInterstitial()
         }
+
+        showNotificationListActivity()
 
 //        setting up summary view model
 
 //        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
 //        viewModel.preferences = prefs
+    }
+
+    private fun showNotificationListActivity() {
+        val intent = Intent(this, NotificationListActivity::class.java)
+        startActivity(intent)
     }
 
     private fun launchTestDetails() {
@@ -250,7 +261,7 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
             if (time <= 0) time = 5
             prefs.edit().putInt("auto_time", time).putBoolean("auto", sw.isChecked).apply()
             setUpdTimer()
-//            showInterstitial()
+            showInterstitial()
         }
 //        builder.setTitle(R.string.action_auto_update);
         builder.setView(v)
@@ -286,7 +297,7 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
         builder.setTitle(R.string.action_about)
         builder.setView(R.layout.about_layout)
         val listener = DialogInterface.OnClickListener { dialogInterface, i ->
-//            showInterstitial()
+            showInterstitial()
         }
         builder.setPositiveButton(R.string.ok, listener)
         builder.create().show()
@@ -300,7 +311,7 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
 
     private fun reloadFragments() {
         (mSectionsPagerAdapter?.currentFragment as? SummaryFragment)?.onRefresh()
-//        showInterstitial()
+        showInterstitial()
     }
 
 

@@ -36,6 +36,10 @@ Greyog App Products, Fusion Media and Investing.com will not accept any liabilit
         <item>View details</item>
         <item>Delete</item>
     </array>
+    <array name="notification_list_long_menu">
+        <item>Edit</item>
+        <item>Delete</item>
+    </array>
     <string name="title_activity_tabs">TabsActivity</string>
     <string name="tab_text_1">Forex</string>
     <string name="tab_text_2">Stock</string>
@@ -47,4 +51,17 @@ Greyog App Products, Fusion Media and Investing.com will not accept any liabilit
     <string name="too_many_elements">Too many elements! Delete something before add.</string>
     <string name="something_wrong">Something went wrong.</string>
     <string name="already_exists">Already exists.</string>
+    <string name="title_activity_notiifications">NotiificationsActivity</string>
+    <string name="new_notification">New notification</string>
+    <string name="cancel">Cancel</string>
+    <array name="notification_conditions">
+        <item>Any</item>
+        <item>Strong Buy</item>
+        <item>Buy</item>
+        <item>Any Buy</item>
+        <item>Neutral</item>
+        <item>Any Sell</item>
+        <item>Sell</item>
+        <item>Strong Sell</item>
+    </array>
 </resources>

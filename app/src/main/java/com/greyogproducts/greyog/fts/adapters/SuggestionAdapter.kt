@@ -1,4 +1,4 @@
-package com.greyogproducts.greyog.fts
+package com.greyogproducts.greyog.fts.adapters
 import android.content.Context
 import android.widget.ArrayAdapter
 import android.widget.Filter

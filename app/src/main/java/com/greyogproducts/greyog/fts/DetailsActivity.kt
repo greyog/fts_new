@@ -69,7 +69,7 @@ class DetailsActivity : AppCompatActivity() {
             tabs.addTab(newTab)
         }
 
-        fab.setOnClickListener { view ->
+        fabNewNotification.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
         }

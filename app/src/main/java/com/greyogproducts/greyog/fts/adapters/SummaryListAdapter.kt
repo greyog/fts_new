@@ -1,4 +1,4 @@
-package com.greyogproducts.greyog.fts
+package com.greyogproducts.greyog.fts.adapters
 
 
 import android.content.Context
@@ -12,6 +12,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.greyogproducts.greyog.fts.DetailsActivity
+import com.greyogproducts.greyog.fts.R
 import com.greyogproducts.greyog.fts.SummaryFragment.OnListFragmentInteractionListener
 import com.greyogproducts.greyog.fts.data.SummaryItemData
 import com.greyogproducts.greyog.fts.dummy.DummyContent.DummyItem
@@ -27,10 +29,10 @@ import kotlin.math.sign
  * [RecyclerView.Adapter] that can display a [DummyItem] and makes a call to the
  * specified [OnListFragmentInteractionListener].
  */
-class MyPairRecyclerViewAdapter(private val viewModel: SummaryListViewModel,
-                                items: ArrayList<SummaryItemData>?,
-                                private val mListener: OnListFragmentInteractionListener?)
-    : RecyclerView.Adapter<MyPairRecyclerViewAdapter.ViewHolder>() {
+class SummaryListAdapter(private val viewModel: SummaryListViewModel,
+                         items: ArrayList<SummaryItemData>?,
+                         private val mListener: OnListFragmentInteractionListener?)
+    : RecyclerView.Adapter<SummaryListAdapter.ViewHolder>() {
 
     private var expandedPos = -1
 
@@ -125,6 +127,7 @@ class MyPairRecyclerViewAdapter(private val viewModel: SummaryListViewModel,
                             intent.putExtra("pair", itemId)
                             intent.putExtra("name", itemName)
                             (mListener as Context).startActivity(intent)
+                            mListener.onListFragmentLongClick()
                         }
                     }
 

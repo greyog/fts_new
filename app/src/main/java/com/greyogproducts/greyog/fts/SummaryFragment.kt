@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
 import com.greyogproducts.greyog.fts.MainActivity.PlaceholderFragment.Companion.ARG_SECTION_NUMBER
+import com.greyogproducts.greyog.fts.adapters.SummaryListAdapter
 import com.greyogproducts.greyog.fts.data.SummaryItemData
 import com.greyogproducts.greyog.fts.data.SummaryListData
 import com.greyogproducts.greyog.fts.vm.SummaryListViewModel
@@ -58,7 +59,7 @@ class SummaryFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
 
     private fun onSummaryResponse(columns: ArrayList<String>, items: ArrayList<SummaryItemData>) {
         mItems = items
-        val newAdapter = MyPairRecyclerViewAdapter(viewModel, mItems, listener)
+        val newAdapter = SummaryListAdapter(viewModel, mItems, listener)
         activity.runOnUiThread {
             //            Toast.makeText(context,"Loaded ${items.size} items", Toast.LENGTH_SHORT).show()
             list.adapter = newAdapter
@@ -161,6 +162,8 @@ class SummaryFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
     interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
         fun onListFragmentInteraction(item: SummaryItemData?)
+
+        fun onListFragmentLongClick()
     }
 
     fun showSortDialog() {
@@ -174,7 +177,7 @@ class SummaryFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
                 el = -sort
             }
             viewModel.setSortValue(el)
-            (list.adapter as MyPairRecyclerViewAdapter).sortBy(el)
+            (list.adapter as SummaryListAdapter).sortBy(el)
 
             dialogInterface.dismiss()
         }
