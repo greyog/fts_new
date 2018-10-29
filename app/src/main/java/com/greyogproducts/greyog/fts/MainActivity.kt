@@ -15,6 +15,11 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.SearchView
 import android.view.*
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.InterstitialAd
+import com.google.android.gms.ads.MobileAds
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.greyogproducts.greyog.fts.data.SearchResponseResult
 import com.greyogproducts.greyog.fts.data.SummaryItemData
 import com.greyogproducts.greyog.fts.vm.SearchViewModel
@@ -22,6 +27,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.auto_update_layout.view.*
 import kotlinx.android.synthetic.main.fragment_main.view.*
 import java.util.*
+
 
 class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteractionListener {
 
@@ -46,7 +52,7 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
         setContentView(R.layout.activity_main)
 
         setSupportActionBar(toolbar)
-//        loadAds()
+        loadAds()
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = SectionsPagerAdapter(supportFragmentManager)
@@ -59,8 +65,8 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
 
 //        fab.visibility = View.VISIBLE
         fab.setOnClickListener { view ->
-            launchTestDetails()
-//            showInterstitial()
+
+            showInterstitial()
         }
 
 //        setting up summary view model
@@ -76,27 +82,47 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
         startActivity(intent)
     }
 
-//    private fun showInterstitial() {
-//        if (mInterstitialAd.isLoaded && Math.random() > 0.7)
-//            mInterstitialAd.show()
-//        else
-//            println("No interstitial")
-//    }
+    private fun showInterstitial() {
+        if (mInterstitialAd.isLoaded && Math.random() > 0.7)
+            mInterstitialAd.show()
+        else
+            println("No interstitial")
+    }
 
 
-//    private fun loadAds() {
-//        MobileAds.initialize(this, "ca-app-pub-7481139450301121~7017797434");
-//        mAdView = findViewById(R.id.adView)
-//        val adRequest = AdRequest.Builder()
-//                .addTestDevice("e071963521c3ebcd").build()
-//        mAdView.loadAd(adRequest)
-//
-//        mInterstitialAd = InterstitialAd(this)
-//        mInterstitialAd.adUnitId = "ca-app-pub-7481139450301121/2352342853"
-//        mInterstitialAd.loadAd(AdRequest.Builder()
-//                .addTestDevice("e071963521c3ebcd")
-//                .build())
-//    }
+    private lateinit var mInterstitialAd: InterstitialAd
+
+    private lateinit var mAdView: AdView
+
+    private lateinit var mFirebaseAnalytics: FirebaseAnalytics
+
+    private fun loadAds() {
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
+
+        logLoadAds()
+
+        MobileAds.initialize(this, "ca-app-pub-7481139450301121~7017797434")
+//        MobileAds.initialize(this, "ca-app-pub-3940256099942544~3347511713") // test
+        mAdView = findViewById<AdView>(R.id.adView)
+        val adRequest = AdRequest.Builder().addTestDevice("2BBD1FDAC2C6B57F6321A92C8C286579")
+                .build()
+        mAdView.loadAd(adRequest)
+//        adid for native ca-app-pub-7481139450301121/4509652193
+
+        mInterstitialAd = InterstitialAd(this)
+        mInterstitialAd.adUnitId = "ca-app-pub-7481139450301121/4167406890"
+        mInterstitialAd.loadAd(AdRequest.Builder()
+                .addTestDevice("2BBD1FDAC2C6B57F6321A92C8C286579")
+                .build())
+    }
+
+    private fun logLoadAds() {
+        val bundle = Bundle()
+        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, this.localClassName)
+        bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, "load Ads")
+        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "text")
+        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle)
+    }
 
 
 //    private var mShareActionProvider: ShareActionProvider? = null

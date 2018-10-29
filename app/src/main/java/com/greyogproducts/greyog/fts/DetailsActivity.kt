@@ -16,6 +16,8 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
 import com.greyogproducts.greyog.fts.data.SinglePairData
 import com.greyogproducts.greyog.fts.vm.ConnectionState
 import com.greyogproducts.greyog.fts.vm.SummSingleViewModel
@@ -72,6 +74,17 @@ class DetailsActivity : AppCompatActivity() {
                     .setAction("Action", null).show()
         }
 
+        loadAds()
+
+    }
+
+    private lateinit var mAdView: AdView
+
+    private fun loadAds() {
+        mAdView = findViewById(R.id.adViewDetails)
+        val adRequest = AdRequest.Builder().addTestDevice("2BBD1FDAC2C6B57F6321A92C8C286579")
+                .build()
+        mAdView.loadAd(adRequest)
     }
 
 
