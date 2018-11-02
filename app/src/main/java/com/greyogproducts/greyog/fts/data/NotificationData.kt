@@ -13,5 +13,5 @@ data class NotificationData(
         val month: TrendCondition = TrendCondition.ANY)
 
 enum class TrendCondition {
-    ANY, STRONG_BUY, BUY, ANY_BUY, NEUTRAL, STRONG_SELL, SELL, ANY_SELL
+    ANY, STRONG_BUY, BUY, ANY_BUY, NEUTRAL, STRONG_SELL, SELL, ANY_SELL;
 }

@@ -60,6 +60,13 @@ class NotificationListAdapter(private val viewModel: NotificationsListViewModel,
             tvnPId.text = item.pairId
             tvnSymbol.text = item.symbol
             tvnDescription.text = item.description
+            setViewTextAndColor(tvnFiveMin, item.fiveMin.toString())
+            setViewTextAndColor(tvnFifteenMin, item.fifteenMin.toString())
+            setViewTextAndColor(tvnHour, item.hour.toString())
+            setViewTextAndColor(tvnFiveHour, item.fiveHour.toString())
+            setViewTextAndColor(tvnDay, item.day.toString())
+            setViewTextAndColor(tvnWeek, item.week.toString())
+            setViewTextAndColor(tvnMonth, item.month.toString())
         }
 //        holder.mView.setOnClickListener {
 //            val h = it.tag as ViewHolder?
@@ -76,11 +83,12 @@ class NotificationListAdapter(private val viewModel: NotificationsListViewModel,
                 val h = it.tag as ViewHolder?
                 if (h != null) {
                     val itemId = h.tvnPId.text
+                    println("long click listener $i , $itemId")
                     when (i) {
                         1 -> { //delete action
-                            val ind = mItems.indexOfFirst { it.pairId == itemId }
-                            mItems = mItems.asSequence().dropWhile { it.pairId == itemId }.toMutableList()
-                            notifyItemRemoved(ind)
+//                            val ind = mItems.indexOfFirst { it.pairId == itemId }
+//                            mItems = mItems.filter { it.pairId != itemId }.toMutableList()
+//                            notifyItemRemoved(ind)
                             viewModel.deleteItem(itemId.toString())
                         }
                         0 -> { //edit action
@@ -119,16 +127,16 @@ class NotificationListAdapter(private val viewModel: NotificationsListViewModel,
     }
 
     inner class ViewHolder(val mView: View) : RecyclerView.ViewHolder(mView) {
-        val tvnPId = mView.tvnPid
-        val tvnSymbol = mView.tvnSymbol
-        val tvnFiveMin = mView.tvn5m
-        val tvnFifteenMin = mView.tvn15m
-        val tvnHour = mView.tvn1h
-        val tvnFiveHour = mView.tvn5h
-        val tvnDay = mView.tvnd
-        val tvnWeek = mView.tvnw
-        val tvnMonth = mView.tvnm
-        val tvnDescription = mView.tvnDescription
+        val tvnPId: TextView = mView.tvnPid
+        val tvnSymbol: TextView = mView.tvnSymbol
+        val tvnFiveMin: TextView = mView.tvn5m
+        val tvnFifteenMin: TextView = mView.tvn15m
+        val tvnHour: TextView = mView.tvn1h
+        val tvnFiveHour: TextView = mView.tvn5h
+        val tvnDay: TextView = mView.tvnd
+        val tvnWeek: TextView = mView.tvnw
+        val tvnMonth: TextView = mView.tvnm
+        val tvnDescription: TextView = mView.tvnDescription
 
         init {
             mView.tag = this

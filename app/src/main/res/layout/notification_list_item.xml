@@ -28,8 +28,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/text_margin"
-            android:layout_toEndOf="@id/tvPid"
-            android:layout_toRightOf="@id/tvPid"
+            android:layout_toEndOf="@id/tvnPid"
+            android:layout_toRightOf="@id/tvnPid"
             android:text="symbol"
             android:textAppearance="?attr/textAppearanceListItem" />
 
@@ -37,8 +37,8 @@
             android:id="@+id/tvnDescription"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/tvSymbol"
-            android:layout_toRightOf="@id/tvSymbol"
+            android:layout_toEndOf="@id/tvnSymbol"
+            android:layout_toRightOf="@id/tvnSymbol"
             android:layout_marginTop="@dimen/text_margin"
             android:text="Description"
             android:textAppearance="?attr/textAppearanceListItem" />
@@ -46,7 +46,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/tvSymbol"
+            android:layout_below="@id/tvnSymbol"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
             android:orientation="vertical">
 
             <TextView
