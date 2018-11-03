@@ -48,4 +48,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-ads:17.0.0'
     implementation 'com.google.android.gms:play-services-ads:17.0.0'
     implementation 'com.google.firebase:firebase-core:16.0.4'
+
+    implementation "android.arch.work:work-runtime:$work_version" // use -ktx for Kotlin
+    // optional - Firebase JobDispatcher support
+    implementation "android.arch.work:work-firebase:$work_version"
+
 }

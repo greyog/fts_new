@@ -54,6 +54,8 @@ Greyog App Products, Fusion Media and Investing.com will not accept any liabilit
     <string name="title_activity_notiifications">NotiificationsActivity</string>
     <string name="new_notification">New notification</string>
     <string name="cancel">Cancel</string>
+    <string name="switch_notifications">Switch Notifications</string>
+    <string name="notification_service_alert">There are notifications at list but service is off. Do you want to turn on background notification service?</string>
     <array name="notification_conditions">
         <item>Any</item>
         <item>Strong Buy</item>

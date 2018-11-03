@@ -1,10 +1,13 @@
 package com.greyogproducts.greyog.fts.model
 
 import android.content.SharedPreferences
+import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
+import com.greyogproducts.greyog.fts.data.NotificationData
 import com.greyogproducts.greyog.fts.data.SummaryItemData
 import com.greyogproducts.greyog.fts.data.SummaryListData
 
-class MyModel(preferences: SharedPreferences) {
+class MyModel(private val preferences: SharedPreferences) {
 
     init {
         RetrofitHelper.preferences = preferences
@@ -29,6 +32,20 @@ class MyModel(preferences: SharedPreferences) {
 
     fun requestSearchData(text: String, listener: RetrofitHelper.OnSearchResponseListener) {
         RetrofitHelper.requestSearchData(text, listener)
+    }
+
+    fun getNotificationList(): List<NotificationData> {
+        val gson = GsonBuilder().setPrettyPrinting().create()
+        val json = preferences.getString("notifications", "")
+        return gson.fromJson(json, object : TypeToken<List<NotificationData>>() {}.type)
+    }
+
+    fun setNotificationList(newList: List<NotificationData>) {
+        val gson = GsonBuilder().setPrettyPrinting().create()
+        val json = gson.toJson(newList)
+//        println("newList: $newList")
+//        println("json after add: $json")
+        preferences.edit().putString("notifications", json).apply()
     }
 }
 

@@ -6,8 +6,10 @@ import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.LayoutInflater
+import android.view.Menu
 import android.widget.EditText
 import android.widget.Spinner
+import android.widget.Switch
 import com.greyogproducts.greyog.fts.adapters.NotificationListAdapter
 import com.greyogproducts.greyog.fts.data.NotificationData
 import com.greyogproducts.greyog.fts.data.TrendCondition
@@ -36,6 +38,54 @@ class NotificationListActivity : AppCompatActivity(), NotificationListAdapter.On
 
         list_notifications.adapter = NotificationListAdapter(viewModel, this)
 
+    }
+
+//    private fun showHasNotificationsAlert() {
+//
+//        val alertDialog = AlertDialog.Builder(this)
+//        alertDialog.setMessage(getString(R.string.notification_service_alert))
+//        alertDialog.setNegativeButton("No", null)
+//        alertDialog.setPositiveButton("Yes, turn it on.") {dialog,i ->
+//            switchOnNotifications(true)
+//            dialog.dismiss()
+//        }
+//        alertDialog.setOnDismissListener { finish() }
+//        alertDialog.create().show()
+//    }
+
+    private var mSwitchNotify: Switch? = null
+
+//    private fun checkNotifyService() {
+//        var hasNotifications = false
+//        viewModel.notificationList.value?.let {
+//            hasNotifications = it.isNotEmpty()
+//        }
+//        if (hasNotifications && !mSwitchNotify!!.isChecked) showHasNotificationsAlert()
+//        if (!hasNotifications && mSwitchNotify!!.isChecked) {
+//            switchOnNotifications(false)
+//            finish()
+//        }
+//    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.menu_notifications, menu)
+        mSwitchNotify = menu.findItem(R.id.switchNotifications).actionView.findViewById(R.id.switcher)
+        mSwitchNotify?.setOnClickListener {
+            switchOnNotifications((it as Switch).isChecked)
+            return@setOnClickListener
+        }
+        return true
+    }
+
+    private fun switchOnNotifications(checked: Boolean) {
+        if (checked) {
+//            println("mSwitchNotify on")
+            viewModel.turnNotificationServiceOn(true)
+        } else {
+            viewModel.turnNotificationServiceOn(false)
+//            println("mSwitchNotify off")
+        }
     }
 
     private fun newNotification() {

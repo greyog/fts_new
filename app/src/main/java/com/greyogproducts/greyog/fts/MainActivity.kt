@@ -154,9 +154,24 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
+        prepareSearch(menu)
+//        menu.findItem(R.id.menu_item_share).also {
+//            mShareActionProvider = MenuItemCompat.getActionProvider(it) as? ShareActionProvider
+//            it.setOnMenuItemClickListener {mi ->
+//                val bitmap = takeScreenshot()
+//                saveBitmap(bitmap)
+//                shareIt()
+//                return@setOnMenuItemClickListener true
+//            }
+//        }
+
+        return true
+    }
+
+    private fun prepareSearch(menu: Menu) {
         viewModel.searchData.observe(this, searchResultObserver)
         val mSearch = menu.findItem(R.id.app_bar_search).actionView as SearchView
-        mSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
+        mSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return false
             }
@@ -169,26 +184,15 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
             }
 
         })
-        mSearchAutoComplete  = mSearch.findViewById(android.support.v7.appcompat.R.id.search_src_text)
+        mSearchAutoComplete = mSearch.findViewById(android.support.v7.appcompat.R.id.search_src_text)
         mSearchAutoComplete.setOnItemClickListener { adapterView, view, i, l ->
-//            Toast.makeText(this, (mSearchAutoComplete.adapter as SuggestionAdapter).getItemPairId(position = i), Toast.LENGTH_SHORT).show()
+            //            Toast.makeText(this, (mSearchAutoComplete.adapter as SuggestionAdapter).getItemPairId(position = i), Toast.LENGTH_SHORT).show()
             val itemId = (mSearchAutoComplete.adapter as SuggestionAdapter).getItemPairId(i)
-//            val itemName = (mSearchAutoComplete.adapter as SuggestionAdapter).getItem(i)
+            //            val itemName = (mSearchAutoComplete.adapter as SuggestionAdapter).getItem(i)
             val tabFragment = (mSectionsPagerAdapter?.currentFragment as SummaryFragment)
             tabFragment.viewModel.addItemToList(itemId)
             tabFragment.onRefresh()
         }
-//        menu.findItem(R.id.menu_item_share).also {
-//            mShareActionProvider = MenuItemCompat.getActionProvider(it) as? ShareActionProvider
-//            it.setOnMenuItemClickListener {mi ->
-//                val bitmap = takeScreenshot()
-//                saveBitmap(bitmap)
-//                shareIt()
-//                return@setOnMenuItemClickListener true
-//            }
-//        }
-
-        return true
     }
 
 //    private fun shareIt() {
@@ -255,9 +259,9 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
         }
 
         val listener = DialogInterface.OnClickListener { dialogInterface, i ->
-            println("onClick: sw, edt = " + sw.isChecked + ed.text.toString())
+            //            println("onClick: sw, edt = " + sw.isChecked + ed.text.toString())
             var time = Integer.parseInt(ed.text.toString())
-            println("onClick: time = $time")
+//            println("onClick: time = $time")
             if (time <= 0) time = 5
             prefs.edit().putInt("auto_time", time).putBoolean("auto", sw.isChecked).apply()
             setUpdTimer()
@@ -281,12 +285,12 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
             override fun run() {
                 runOnUiThread {
                     reloadFragments()
-                    println("run: autoUpdTimer, time = $minutes")
+//                    println("run: autoUpdTimer, time = $minutes")
                 }
             }
         }
         mUpdTimer?.schedule(task, (minutes * 60 * 1000).toLong(), (minutes * 60000).toLong())
-        println("setUpdTimer: set timer, time = " + minutes * 60000)
+//        println("setUpdTimer: set timer, time = " + minutes * 60000)
 
     }
 
