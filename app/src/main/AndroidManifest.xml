@@ -57,7 +57,7 @@
 
         <activity
             android:name=".NotificationListActivity"
-            android:label="@string/title_activity_notiifications"
+            android:label="@string/title_activity_notifications"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme">
             <meta-data

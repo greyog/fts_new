@@ -47,7 +47,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/tvnSymbol"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="5dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginStart="5dp"
             android:orientation="vertical">
 
             <TextView
@@ -55,7 +57,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="Summary"
+                android:text="Summary conditions"
                 android:visibility="visible" />
 
             <LinearLayout
@@ -67,51 +69,65 @@
 
                 <TextView
                     android:id="@+id/tvn5m"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginRight="5dp"
                     android:layout_weight="1"
+                    android:gravity="center"
                     android:text="5min" />
 
                 <TextView
                     android:id="@+id/tvn15m"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginRight="5dp"
                     android:layout_weight="1"
+                    android:gravity="center"
                     android:text="15min" />
 
                 <TextView
                     android:id="@+id/tvn1h"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginRight="5dp"
                     android:layout_weight="1"
+                    android:gravity="center"
                     android:text="hour" />
 
                 <TextView
                     android:id="@+id/tvn5h"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginRight="5dp"
                     android:layout_weight="1"
+                    android:gravity="center"
                     android:text="5hour" />
 
                 <TextView
                     android:id="@+id/tvnd"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginRight="5dp"
                     android:layout_weight="1"
+                    android:gravity="center"
                     android:text="day" />
 
                 <TextView
                     android:id="@+id/tvnw"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginRight="5dp"
                     android:layout_weight="1"
+                    android:gravity="center"
                     android:text="week" />
 
                 <TextView
                     android:id="@+id/tvnm"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginRight="5dp"
                     android:layout_weight="1"
+                    android:gravity="center"
                     android:text="month" />
             </LinearLayout>
         </LinearLayout>

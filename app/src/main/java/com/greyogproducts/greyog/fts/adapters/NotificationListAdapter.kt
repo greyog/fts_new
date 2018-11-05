@@ -3,6 +3,7 @@ package com.greyogproducts.greyog.fts.adapters
 import android.arch.lifecycle.Observer
 import android.content.Context
 import android.content.DialogInterface
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.RecyclerView
@@ -21,9 +22,7 @@ class NotificationListAdapter(private val viewModel: NotificationsListViewModel,
     : RecyclerView.Adapter<NotificationListAdapter.ViewHolder>() {
 
     interface OnListInteractionListener {
-        // TODO: Update argument type and name
-        fun onListInteraction(item: NotificationData?)
-//        fun onListFragmentLongClick()
+        fun onActionEdit(item: NotificationData?)
     }
 
     private val mOnClickListener: View.OnClickListener
@@ -40,10 +39,11 @@ class NotificationListAdapter(private val viewModel: NotificationsListViewModel,
 
     init {
         mOnClickListener = View.OnClickListener { v ->
-            val item = v.tag as NotificationData
+            val vh = v.tag as ViewHolder
             // Notify the active callbacks interface (the activity, if the fragment is attached to
             // one) that an item has been selected.
-            mListener.onListInteraction(item)
+            editItem(vh.tvnPId.text.toString())
+            println("${this::class.java.simpleName}: list click")
         }
         viewModel.notificationList.observe(mListener as NotificationListActivity, itemsObserver)
     }
@@ -77,6 +77,8 @@ class NotificationListAdapter(private val viewModel: NotificationsListViewModel,
 //            notifyItemChanged(expandedPos)
 //        }
 
+        holder.mView.setOnClickListener(mOnClickListener)
+
         holder.mView.setOnLongClickListener { it ->
             val builder = AlertDialog.Builder(this.mListener as Context)
             val listener = DialogInterface.OnClickListener { dialogInterface, i ->
@@ -86,9 +88,6 @@ class NotificationListAdapter(private val viewModel: NotificationsListViewModel,
                     println("long click listener $i , $itemId")
                     when (i) {
                         1 -> { //delete action
-//                            val ind = mItems.indexOfFirst { it.pairId == itemId }
-//                            mItems = mItems.filter { it.pairId != itemId }.toMutableList()
-//                            notifyItemRemoved(ind)
                             viewModel.deleteItem(itemId.toString())
                         }
                         0 -> { //edit action
@@ -108,14 +107,17 @@ class NotificationListAdapter(private val viewModel: NotificationsListViewModel,
     }
 
     private fun editItem(itemId: String) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        mListener.onActionEdit(mItems.find { it.pairId == itemId })
     }
+
+    private var mDefaultColorStateList: ColorStateList? = null
 
     private fun setViewTextAndColor(textView: TextView?, s: String) {
         textView?.text = s
         when {
             s.contains("Buy") -> textView?.setTextColor(Color.GREEN)
             s.contains("Sell") -> textView?.setTextColor(Color.RED)
+            else -> textView?.setTextColor(mDefaultColorStateList)
         }
     }
 
@@ -127,6 +129,7 @@ class NotificationListAdapter(private val viewModel: NotificationsListViewModel,
     }
 
     inner class ViewHolder(val mView: View) : RecyclerView.ViewHolder(mView) {
+
         val tvnPId: TextView = mView.tvnPid
         val tvnSymbol: TextView = mView.tvnSymbol
         val tvnFiveMin: TextView = mView.tvn5m
@@ -140,6 +143,9 @@ class NotificationListAdapter(private val viewModel: NotificationsListViewModel,
 
         init {
             mView.tag = this
+            if (mDefaultColorStateList == null) {
+                mDefaultColorStateList = tvnDay.textColors
+            }
         }
 
     }

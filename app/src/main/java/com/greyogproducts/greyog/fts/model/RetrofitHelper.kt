@@ -1,6 +1,5 @@
 package com.greyogproducts.greyog.fts.model
 
-import android.content.SharedPreferences
 import com.greyogproducts.greyog.fts.data.RawSummaryResponseResult
 import com.greyogproducts.greyog.fts.data.SearchResponseResult
 import com.greyogproducts.greyog.fts.data.SummaryItemData
@@ -29,15 +28,15 @@ class RetrofitHelper {
                 }
                 return mInstance!!
             }
-        lateinit var preferences: SharedPreferences
+//        lateinit var preferences: SharedPreferences
 
-        fun requestSummaryList(tabNum: Int, listener: OnResponseListener) {
+        fun getSummaryList(periods: Set<String>, pairs: Set<String>, listener: OnResponseListener) {
             if (instance.phpSessId == null) {
                 instance.doTechRequest(object : OnTechRequestCallBack {
                     override fun onHappySessId() {
                         println("CONNECTION OK, now requesting searchData...")
                         listener.onConnectionOk()
-                        instance.doSummaryRequest(tabNum, listener)
+                        instance.doSummaryRequest(periods, pairs, listener)
                     }
 
                     override fun onBadSessId() {
@@ -47,7 +46,7 @@ class RetrofitHelper {
 
                 })
             } else
-                instance.doSummaryRequest(tabNum, listener)
+                instance.doSummaryRequest(periods, pairs, listener)
         }
 
         fun requestSingleItemData(pairId: String, period: String, listener: OnResponsePairDataCallback) {
@@ -156,9 +155,9 @@ class RetrofitHelper {
         @FormUrlEncoded
         @POST("technical/Service/GetSummaryTable")
         fun getSummaryTable(@Field("tab") tab: String,
-                            @Field("options[periods][]") periods: MutableSet<String>,
+                            @Field("options[periods][]") periods: Set<String>,
                             @Field("options[receive_email]") email: String, // = false
-                            @Field("options[currencies][]") pairs: MutableSet<String>): Call<RawSummaryResponseResult>
+                            @Field("options[currencies][]") pairs: Set<String>): Call<RawSummaryResponseResult>
     }
 
     private class RequestInterceptor(val phpSessId: String?, val stickySess: String?) : Interceptor {
@@ -358,7 +357,7 @@ class RetrofitHelper {
     }
 
 
-    fun doSummaryRequest(tabNum: Int, listener: OnResponseListener) {
+    fun doSummaryRequest(periods: Set<String>, pairs: Set<String>, listener: OnResponseListener) {
         if (phpSessId == null) {
             println("doRequest: no phpSessID found")
             return
@@ -375,32 +374,8 @@ class RetrofitHelper {
                 .build()
 
         val server = retrofit.create(Server::class.java)
-        val defPeriods: MutableSet<String> = mutableSetOf("300", "900", "3600", "18000", "86400", "week", "month")
-        val defPairs: MutableSet<String> = when (tabNum) {
-            2 -> mutableSetOf("169", "166", "14958", "20", "172", "27", "167", "168", "178", "171", "17940")
-            1 -> mutableSetOf("7888", "6617", "252", "7997", "6408", "8952", "280", "8193", "6369", "8082", "243", "352", "302", "334", "474", "670", "6974")
-            3 -> mutableSetOf("8830", "8836", "8831", "8849", "8833", "8862", "8917")
-            else -> mutableSetOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")
 
-        }
-        val p = setOf<String>().toMutableSet()
-        val c = setOf<String>().toMutableSet()
-
-        val prefs = preferences
-        val key = "pairs$tabNum"
-        prefs?.let {
-            p += it.getStringSet("periods", defPeriods)
-            if (!it.contains(key))
-                it.edit().putStringSet(key, defPairs).apply()
-            c += it.getStringSet(key, defPairs)
-            //, "11", "12", "13", "169", "166", "14958", "20", "172", "27", "167", "168", "178", "171", "17940")
-        }
-
-        if (p.isEmpty()) p.addAll(defPeriods)
-        if (c.isEmpty()) c.addAll(defPairs)
-        println("periods: $p")
-        println("pairs: $c")
-        val call = server.getSummaryTable("forex", p, "false", c)
+        val call = server.getSummaryTable("forex", periods, "false", pairs)
         call.enqueue(object : Callback<RawSummaryResponseResult> {
             override fun onResponse(call: Call<RawSummaryResponseResult>, responseRaw: Response<RawSummaryResponseResult>) {
                 if (responseRaw.isSuccessful) {

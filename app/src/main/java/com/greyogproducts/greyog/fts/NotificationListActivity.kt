@@ -7,9 +7,11 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.LayoutInflater
 import android.view.Menu
+import android.view.View
 import android.widget.EditText
 import android.widget.Spinner
 import android.widget.Switch
+import android.widget.TextView
 import com.greyogproducts.greyog.fts.adapters.NotificationListAdapter
 import com.greyogproducts.greyog.fts.data.NotificationData
 import com.greyogproducts.greyog.fts.data.TrendCondition
@@ -18,8 +20,8 @@ import kotlinx.android.synthetic.main.activity_notifications.*
 import kotlinx.android.synthetic.main.content_notifications.*
 
 class NotificationListActivity : AppCompatActivity(), NotificationListAdapter.OnListInteractionListener {
-    override fun onListInteraction(item: NotificationData?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun onActionEdit(item: NotificationData?) {
+        editNotification(item)
     }
 
     private val viewModel: NotificationsListViewModel by lazy {
@@ -32,7 +34,7 @@ class NotificationListActivity : AppCompatActivity(), NotificationListAdapter.On
         setSupportActionBar(toolbar)
 
         fabNewNotification.setOnClickListener { view ->
-            newNotification()
+            editNotification(null)
         }
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
@@ -88,37 +90,32 @@ class NotificationListActivity : AppCompatActivity(), NotificationListAdapter.On
         }
     }
 
-    private fun newNotification() {
+    private fun editNotification(nd: NotificationData?) {
         val builder = AlertDialog.Builder(this)
 //        val v = layoutInflater.inflate(R.layout.about_layout, null)
         builder.setTitle(R.string.new_notification)
         val view = LayoutInflater.from(this).inflate(R.layout.notification_edit, null)
+        if (nd != null) {
+            println("${this.localClassName}: data to edit $nd")
+            buildNotificationEditDialog(view, nd)
+        }
+//todo auto fill symbol text view
         builder.setView(view)
         val listener = DialogInterface.OnClickListener { dialogInterface, i ->
-            fun textToCondition(text: String): TrendCondition {
-                return when (text) {
-                    "Buy" -> TrendCondition.BUY
-                    "Sell" -> TrendCondition.SELL
-                    "Any Buy" -> TrendCondition.ANY_BUY
-                    "Any Sell" -> TrendCondition.ANY_SELL
-                    "Neutral" -> TrendCondition.NEUTRAL
-                    "Strong Buy" -> TrendCondition.STRONG_BUY
-                    "Strong Sell" -> TrendCondition.STRONG_SELL
-                    else -> TrendCondition.ANY
-                }
-            }
+            if (view.findViewById<EditText>(R.id.etId).text.toString() == "") return@OnClickListener
 
             val data = NotificationData(view.findViewById<EditText>(R.id.etId).text.toString(),
                     view.findViewById<EditText>(R.id.etSymbol).text.toString(),
                     view.findViewById<EditText>(R.id.etDescription).text.toString(),
-                    textToCondition(view.findViewById<Spinner>(R.id.spinner5min).selectedItem.toString()),
-                    textToCondition(view.findViewById<Spinner>(R.id.spinner15min).selectedItem.toString()),
-                    textToCondition(view.findViewById<Spinner>(R.id.spinner1HOUR).selectedItem.toString()),
-                    textToCondition(view.findViewById<Spinner>(R.id.spinner5HOUR).selectedItem.toString()),
-                    textToCondition(view.findViewById<Spinner>(R.id.spinnerDAY).selectedItem.toString()),
-                    textToCondition(view.findViewById<Spinner>(R.id.spinnerWEEK).selectedItem.toString()),
-                    textToCondition(view.findViewById<Spinner>(R.id.spinnerMONTH).selectedItem.toString())
+                    TrendCondition.fromString(view.findViewById<Spinner>(R.id.spinner5min).selectedItem.toString()),
+                    TrendCondition.fromString(view.findViewById<Spinner>(R.id.spinner15min).selectedItem.toString()),
+                    TrendCondition.fromString(view.findViewById<Spinner>(R.id.spinner1HOUR).selectedItem.toString()),
+                    TrendCondition.fromString(view.findViewById<Spinner>(R.id.spinner5HOUR).selectedItem.toString()),
+                    TrendCondition.fromString(view.findViewById<Spinner>(R.id.spinnerDAY).selectedItem.toString()),
+                    TrendCondition.fromString(view.findViewById<Spinner>(R.id.spinnerWEEK).selectedItem.toString()),
+                    TrendCondition.fromString(view.findViewById<Spinner>(R.id.spinnerMONTH).selectedItem.toString())
             )
+            println("${this.localClassName}: data to save $data")
             viewModel.addItem(data)
         }
         builder.setPositiveButton(R.string.ok, listener)
@@ -126,4 +123,29 @@ class NotificationListActivity : AppCompatActivity(), NotificationListAdapter.On
         builder.create().show()
     }
 
+    private fun buildNotificationEditDialog(v: View, nd: NotificationData) {
+
+        fun setSpinnerPosition(spinnerId: Int, tc: TrendCondition) {
+            val spnr = v.findViewById<Spinner>(spinnerId)
+            val conditions = (application.resources.getStringArray(R.array.notification_conditions))
+            val pos = conditions.indexOf(tc.toString())
+            spnr.setSelection(pos, true)
+        }
+
+        v.findViewById<EditText>(R.id.etId).setText(nd.pairId, TextView.BufferType.EDITABLE)
+        v.findViewById<EditText>(R.id.etSymbol).setText(nd.symbol, TextView.BufferType.EDITABLE)
+        v.findViewById<EditText>(R.id.etDescription).setText(nd.description, TextView.BufferType.EDITABLE)
+        val spinnerIds = mapOf(
+                R.id.spinner5min to nd.fiveMin,
+                R.id.spinner15min to nd.fifteenMin,
+                R.id.spinner1HOUR to nd.hour,
+                R.id.spinner5HOUR to nd.fiveHour,
+                R.id.spinnerDAY to nd.day,
+                R.id.spinnerWEEK to nd.week,
+                R.id.spinnerMONTH to nd.month
+        )
+        spinnerIds.map {
+            setSpinnerPosition(it.key, it.value)
+        }
+    }
 }

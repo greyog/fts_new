@@ -4,12 +4,9 @@ import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.MutableLiveData
 import android.preference.PreferenceManager
-import androidx.work.PeriodicWorkRequest
-import androidx.work.WorkManager
 import com.greyogproducts.greyog.fts.data.NotificationData
 import com.greyogproducts.greyog.fts.model.MyModel
 import com.greyogproducts.greyog.fts.workers.NotificationWorker
-import java.util.concurrent.TimeUnit
 
 class NotificationsListViewModel(app: Application) : AndroidViewModel(app) {
     private val model = MyModel(PreferenceManager.getDefaultSharedPreferences(app))
@@ -37,7 +34,9 @@ class NotificationsListViewModel(app: Application) : AndroidViewModel(app) {
     fun addItem(item: NotificationData) {
 //        println("item to add: $item")
         val oldList = notificationList.value ?: emptyList()
-        val newList = oldList.asSequence().dropWhile { it.pairId == item.pairId }.toMutableList()
+        val newList = oldList
+                .filter { it.pairId != item.pairId }
+                .toMutableList()
         newList.add(item)
         model.setNotificationList(newList)
         refreshList()
@@ -45,12 +44,10 @@ class NotificationsListViewModel(app: Application) : AndroidViewModel(app) {
 
     fun turnNotificationServiceOn(isOn: Boolean) {
         if (isOn) {
-            val wrBuilder = PeriodicWorkRequest.Builder(NotificationWorker::class.java, 1, TimeUnit.MINUTES)
-            wrBuilder.addTag(NotificationWorker.TAG)
-            val wr = wrBuilder.build()
-            WorkManager.getInstance().enqueue(wr)
+            NotificationWorker.triggerNextWorker()
         } else {
-            WorkManager.getInstance().cancelAllWorkByTag(NotificationWorker.TAG)
+            NotificationWorker.cancelWorkers()
+
         }
     }
 

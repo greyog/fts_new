@@ -51,7 +51,7 @@ Greyog App Products, Fusion Media and Investing.com will not accept any liabilit
     <string name="too_many_elements">Too many elements! Delete something before add.</string>
     <string name="something_wrong">Something went wrong.</string>
     <string name="already_exists">Already exists.</string>
-    <string name="title_activity_notiifications">NotiificationsActivity</string>
+    <string name="title_activity_notifications">Manage Notifications</string>
     <string name="new_notification">New notification</string>
     <string name="cancel">Cancel</string>
     <string name="switch_notifications">Switch Notifications</string>

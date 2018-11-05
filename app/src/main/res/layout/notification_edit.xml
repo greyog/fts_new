@@ -1,127 +1,134 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="@dimen/activity_horizontal_margin">
+    android:padding="@dimen/activity_horizontal_margin"
+    android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/etId"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:hint="id" />
+        android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/etSymbol"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:hint="symbol" />
 
-    <EditText
-        android:id="@+id/etDescription"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:text="description"
-        android:hint="description" />
+        <EditText
+            android:id="@+id/etId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="id"
+            android:inputType="textPersonName" />
 
-    <!--<ImageView-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="2dp"-->
-    <!--android:src="@drawable/placeholder_image"/>-->
+        <EditText
+            android:id="@+id/etSymbol"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="symbol"
+            android:inputType="textPersonName" />
 
-    <View
-        android:id="@+id/divider"
-        android:layout_width="match_parent"
-        android:layout_height="3dp"
-        android:background="?android:attr/listDivider" />
+        <EditText
+            android:id="@+id/etDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="description"
+            android:inputType="textPersonName"
+            android:text="description" />
 
-    <TextView
-        android:paddingTop="8dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="5MIN Condition" />
+        <!--<ImageView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="2dp"-->
+        <!--android:src="@drawable/placeholder_image"/>-->
 
-    <Spinner
-        android:id="@+id/spinner5min"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:entries="@array/notification_conditions" />
+        <View
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:background="?android:attr/listDivider" />
 
-    <TextView
-        android:paddingTop="8dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="15MIN Condition" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp"
+            android:text="5MIN Condition" />
 
-    <Spinner
-        android:id="@+id/spinner15min"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:entries="@array/notification_conditions" />
+        <Spinner
+            android:id="@+id/spinner5min"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/notification_conditions" />
 
-    <TextView
-        android:paddingTop="8dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="HOUR Condition" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp"
+            android:text="15MIN Condition" />
 
-    <Spinner
-        android:id="@+id/spinner1HOUR"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:entries="@array/notification_conditions" />
+        <Spinner
+            android:id="@+id/spinner15min"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/notification_conditions" />
 
-    <TextView
-        android:paddingTop="8dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="5HOUR Condition" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp"
+            android:text="HOUR Condition" />
 
-    <Spinner
-        android:id="@+id/spinner5HOUR"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:entries="@array/notification_conditions" />
+        <Spinner
+            android:id="@+id/spinner1HOUR"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/notification_conditions" />
 
-    <TextView
-        android:paddingTop="8dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="DAY Condition" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp"
+            android:text="5HOUR Condition" />
 
-    <Spinner
-        android:id="@+id/spinnerDAY"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:entries="@array/notification_conditions" />
+        <Spinner
+            android:id="@+id/spinner5HOUR"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/notification_conditions" />
 
-    <TextView
-        android:paddingTop="8dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="WEEK Condition" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp"
+            android:text="DAY Condition" />
 
-    <Spinner
-        android:id="@+id/spinnerWEEK"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:entries="@array/notification_conditions" />
+        <Spinner
+            android:id="@+id/spinnerDAY"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/notification_conditions" />
 
-    <TextView
-        android:paddingTop="8dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="MONTH Condition" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp"
+            android:text="WEEK Condition" />
 
-    <Spinner
-        android:id="@+id/spinnerMONTH"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:entries="@array/notification_conditions" />
-</LinearLayout>
+        <Spinner
+            android:id="@+id/spinnerWEEK"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/notification_conditions" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp"
+            android:text="MONTH Condition" />
+
+        <Spinner
+            android:id="@+id/spinnerMONTH"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/notification_conditions" />
+    </LinearLayout>
+</ScrollView>
