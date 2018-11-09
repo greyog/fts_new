@@ -19,6 +19,14 @@ class SuggestionAdapter(context: Context, private val items: List<All>)
         return items[position].pairID.toString()
     }
 
+    fun getItemSymbol(position: Int): String {
+        return items[position].symbol.toString()
+    }
+
+    fun getItemDescription(position: Int): String {
+        return items[position].transName.toString()
+    }
+
     override fun getItemId(position: Int): Long {
         return position.toLong()
     }
@@ -35,7 +43,6 @@ class SuggestionAdapter(context: Context, private val items: List<All>)
     }
 
     override fun getCount(): Int {
-        //todo: change to pattern-size
         return items.size
     }
 

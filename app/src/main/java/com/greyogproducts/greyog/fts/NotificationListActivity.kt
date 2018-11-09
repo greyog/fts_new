@@ -1,21 +1,24 @@
 package com.greyogproducts.greyog.fts
 
+import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.DialogInterface
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
-import android.widget.EditText
-import android.widget.Spinner
-import android.widget.Switch
-import android.widget.TextView
+import android.widget.*
 import com.greyogproducts.greyog.fts.adapters.NotificationListAdapter
+import com.greyogproducts.greyog.fts.adapters.SuggestionAdapter
 import com.greyogproducts.greyog.fts.data.NotificationData
+import com.greyogproducts.greyog.fts.data.SearchResponseResult
 import com.greyogproducts.greyog.fts.data.TrendCondition
 import com.greyogproducts.greyog.fts.vm.NotificationsListViewModel
+import com.greyogproducts.greyog.fts.vm.SearchViewModel
 import kotlinx.android.synthetic.main.activity_notifications.*
 import kotlinx.android.synthetic.main.content_notifications.*
 
@@ -34,7 +37,10 @@ class NotificationListActivity : AppCompatActivity(), NotificationListAdapter.On
         setSupportActionBar(toolbar)
 
         fabNewNotification.setOnClickListener { view ->
-            editNotification(null)
+            if ((viewModel.notificationList.value?.size ?: 0) >= 20)
+                Toast.makeText(this, getString(R.string.too_many_elements), Toast.LENGTH_SHORT).show()
+            else
+                editNotification(null)
         }
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
@@ -73,6 +79,7 @@ class NotificationListActivity : AppCompatActivity(), NotificationListAdapter.On
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_notifications, menu)
         mSwitchNotify = menu.findItem(R.id.switchNotifications).actionView.findViewById(R.id.switcher)
+        mSwitchNotify?.isChecked = viewModel.isNotificationsOn()
         mSwitchNotify?.setOnClickListener {
             switchOnNotifications((it as Switch).isChecked)
             return@setOnClickListener
@@ -84,8 +91,11 @@ class NotificationListActivity : AppCompatActivity(), NotificationListAdapter.On
         if (checked) {
 //            println("mSwitchNotify on")
             viewModel.turnNotificationServiceOn(true)
+            Toast.makeText(this, getString(R.string.notifications_on), Toast.LENGTH_SHORT).show()
         } else {
             viewModel.turnNotificationServiceOn(false)
+            Toast.makeText(this, getString(R.string.notifications_off), Toast.LENGTH_SHORT).show()
+
 //            println("mSwitchNotify off")
         }
     }
@@ -99,7 +109,8 @@ class NotificationListActivity : AppCompatActivity(), NotificationListAdapter.On
             println("${this.localClassName}: data to edit $nd")
             buildNotificationEditDialog(view, nd)
         }
-//todo auto fill symbol text view
+
+        makeAutoComplete(view)
         builder.setView(view)
         val listener = DialogInterface.OnClickListener { dialogInterface, i ->
             if (view.findViewById<EditText>(R.id.etId).text.toString() == "") return@OnClickListener
@@ -147,5 +158,51 @@ class NotificationListActivity : AppCompatActivity(), NotificationListAdapter.On
         spinnerIds.map {
             setSpinnerPosition(it.key, it.value)
         }
+    }
+
+    private val searchViewModel: SearchViewModel by lazy {
+        ViewModelProviders.of(this)[SearchViewModel::class.java]
+    }
+    private lateinit var editSymbol: AutoCompleteTextView
+
+    private val searchDataObserver = Observer<SearchResponseResult> {
+        if (it != null) {
+            val adapter = SuggestionAdapter(this, it.all)
+            editSymbol.setAdapter(adapter)
+            editSymbol.showDropDown()
+        }
+    }
+
+    private fun makeAutoComplete(view: View) {
+        val editId: EditText = view.findViewById(R.id.etId)
+        val editDescription: EditText = view.findViewById(R.id.etDescription)
+        editSymbol = view.findViewById(R.id.etSymbol)
+        searchViewModel.searchData.observe(this, searchDataObserver)
+        val tw = object : TextWatcher {
+            override fun afterTextChanged(p0: Editable?) {
+//                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+//                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                searchViewModel.searchFor(p0.toString())
+            }
+        }
+
+        editSymbol.addTextChangedListener(tw)
+        editSymbol.setOnItemClickListener { adapterView, v, i, l ->
+            val adptr = (editSymbol.adapter as SuggestionAdapter)
+            val itemId = adptr.getItemPairId(i)
+            editId.setText(itemId, TextView.BufferType.NORMAL)
+            editDescription.setText(adptr.getItemDescription(i), TextView.BufferType.NORMAL)
+            editSymbol.setAdapter(null)
+            editSymbol.setText(adptr.getItemSymbol(i), TextView.BufferType.NORMAL)
+
+        }
+
+
     }
 }

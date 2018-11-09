@@ -17,9 +17,10 @@
             android:layout_height="wrap_content"
             android:ems="10"
             android:hint="id"
+            android:visibility="gone"
             android:inputType="textPersonName" />
 
-        <EditText
+        <AutoCompleteTextView
             android:id="@+id/etSymbol"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

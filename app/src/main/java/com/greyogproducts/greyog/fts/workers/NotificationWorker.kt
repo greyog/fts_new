@@ -38,6 +38,15 @@ class NotificationWorker(val context: Context, val workerParams: WorkerParameter
         fun cancelWorkers() {
             WorkManager.getInstance().cancelAllWorkByTag(NotificationWorker.TAG)
         }
+
+        fun isWorking(): Boolean {
+            var status = false
+            val r = WorkManager.getInstance().getStatusesByTag(TAG).get().map {
+                println("${this::class.java.simpleName}: ${it.id}, ${it.state}")
+                status = status || !it.state.isFinished
+            }
+            return status
+        }
     }
 
     override fun doWork(): Result {

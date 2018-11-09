@@ -160,7 +160,6 @@ class SummaryFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
      * for more information.
      */
     interface OnListFragmentInteractionListener {
-        // TODO: Update argument type and name
         fun onListFragmentInteraction(item: SummaryItemData?)
 
         fun onListFragmentLongClick()

@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
             showInterstitial()
         }
 
-        showNotificationListActivity()
+//        showNotificationListActivity()
 
 //        setting up summary view model
 
@@ -239,6 +239,7 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
             R.id.action_sort -> showSortDialog()
             R.id.action_set_auto_update -> showAutoUpdateDialog()
             R.id.action_about -> showAboutDialog()
+            R.id.action_manage_notifications -> showNotificationListActivity()
         }
 
         return super.onOptionsItemSelected(item)

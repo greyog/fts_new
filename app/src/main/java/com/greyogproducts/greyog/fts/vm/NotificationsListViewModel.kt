@@ -42,6 +42,10 @@ class NotificationsListViewModel(app: Application) : AndroidViewModel(app) {
         refreshList()
     }
 
+    fun isNotificationsOn(): Boolean {
+        return NotificationWorker.isWorking()
+    }
+
     fun turnNotificationServiceOn(isOn: Boolean) {
         if (isOn) {
             NotificationWorker.triggerNextWorker()

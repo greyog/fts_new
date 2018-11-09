@@ -10,6 +10,12 @@
         app:showAsAction="ifRoom"/>
 
     <item
+        android:id="@+id/action_manage_notifications"
+        android:orderInCategory="80"
+        android:title="@string/title_activity_notifications"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_about"
         android:orderInCategory="110"
         android:title="@string/action_about"
