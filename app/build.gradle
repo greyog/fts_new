@@ -10,8 +10,8 @@ android {
         applicationId 'com.greyogproducts.greyog.fts'
         minSdkVersion 15
         targetSdkVersion 26
-        versionCode 22
-        versionName '3.22'
+        versionCode 26
+        versionName '3.26'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

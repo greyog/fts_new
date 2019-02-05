@@ -8,11 +8,22 @@
         android:title="@string/search"
         app:actionViewClass="android.support.v7.widget.SearchView"
         app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/action_share"
+        android:icon="@android:drawable/ic_menu_share"
+        android:title="@string/share"
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_manage_notifications"
         android:orderInCategory="80"
         android:title="@string/title_activity_notifications"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_leave_feedback"
+        android:icon="@drawable/ic_sentiment_satisfied_menu"
+        android:title="@string/menu_title_leave_feedback"
         app:showAsAction="never" />
 
     <item

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="@dimen/activity_horizontal_margin">
+
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/please_we_need" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/btNegativeFeedback"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:contentDescription="Dissatisfied"
+            android:padding="16dp"
+            android:src="@drawable/ic_sentiment_dissatisfied_black_24dp" />
+
+        <ImageButton
+            android:id="@+id/btNeutralFeedback"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:contentDescription="Neutral"
+            android:padding="16dp"
+            android:src="@drawable/ic_sentiment_neutral_black_24dp" />
+
+        <ImageButton
+            android:id="@+id/btPositiveFeedback"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:contentDescription="Satisfied"
+            android:padding="16dp"
+
+            android:src="@drawable/ic_sentiment_satisfied_black_24dp" />
+
+
+    </LinearLayout>
+
+</LinearLayout>

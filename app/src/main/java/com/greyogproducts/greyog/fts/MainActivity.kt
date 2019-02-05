@@ -3,9 +3,14 @@ package com.greyogproducts.greyog.fts
 import android.annotation.SuppressLint
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.ComponentName
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.preference.PreferenceManager
 import android.support.design.widget.TabLayout
 import android.support.v4.app.Fragment
@@ -15,6 +20,7 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.SearchView
 import android.view.*
+import android.widget.Toast
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.InterstitialAd
@@ -27,6 +33,9 @@ import com.greyogproducts.greyog.fts.vm.SearchViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.auto_update_layout.view.*
 import kotlinx.android.synthetic.main.fragment_main.view.*
+import kotlinx.android.synthetic.main.leave_feedback_layout.view.*
+import java.io.File
+import java.io.FileOutputStream
 import java.util.*
 
 
@@ -68,17 +77,28 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
         tabs.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(container))
 
 //        fab.visibility = View.VISIBLE
-        fabNewNotification.setOnClickListener { view ->
+        fabNewNotification.setOnClickListener {
 
             showInterstitial()
         }
 
 //        showNotificationListActivity()
 
-//        setting up summary view model
+        checkForFeedback()
+    }
 
-//        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-//        viewModel.preferences = prefs
+    private fun checkForFeedback() {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val curTime = System.currentTimeMillis()
+        val firstRunTime = prefs.getLong("first_run", 0)
+        if (firstRunTime.compareTo(0) == 0) {
+            prefs.edit().putLong("first_run", curTime).apply()
+//            println("it's first run. Time is ${Date(firstRunTime)}")
+        } else {
+            val raznost = (curTime - firstRunTime).toFloat() / (1000 * 60 * 60 * 24)
+            val lastFeedbackTime = prefs.getLong("feedback_time", 0)
+            if (raznost > 7 && lastFeedbackTime.compareTo(0) == 0) showFeedbackDialog()
+        }
     }
 
     private fun showNotificationListActivity() {
@@ -86,12 +106,12 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
         startActivity(intent)
     }
 
-    private fun launchTestDetails() {
-        val intent = Intent(this, DetailsActivity::class.java)
-        intent.putExtra("pair", "1")
-        intent.putExtra("name", "NAME_HERE")
-        startActivity(intent)
-    }
+//    private fun launchTestDetails() {
+//        val intent = Intent(this, DetailsActivity::class.java)
+//        intent.putExtra("pair", "1")
+//        intent.putExtra("name", "NAME_HERE")
+//        startActivity(intent)
+//    }
 
     private fun showInterstitial() {
         if (mInterstitialAd.isLoaded && Math.random() > 0.7)
@@ -114,7 +134,7 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
 
         MobileAds.initialize(this, "ca-app-pub-7481139450301121~7017797434")
 //        MobileAds.initialize(this, "ca-app-pub-3940256099942544~3347511713") // test
-        mAdView = findViewById<AdView>(R.id.adView)
+        mAdView = findViewById(R.id.adView)
         val adRequest = AdRequest.Builder().addTestDevice("2BBD1FDAC2C6B57F6321A92C8C286579")
                 .build()
         mAdView.loadAd(adRequest)
@@ -185,7 +205,7 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
 
         })
         mSearchAutoComplete = mSearch.findViewById(android.support.v7.appcompat.R.id.search_src_text)
-        mSearchAutoComplete.setOnItemClickListener { adapterView, view, i, l ->
+        mSearchAutoComplete.setOnItemClickListener { _, _, i, _ ->
             //            Toast.makeText(this, (mSearchAutoComplete.adapter as SuggestionAdapter).getItemPairId(position = i), Toast.LENGTH_SHORT).show()
             val itemId = (mSearchAutoComplete.adapter as SuggestionAdapter).getItemPairId(i)
             //            val itemName = (mSearchAutoComplete.adapter as SuggestionAdapter).getItem(i)
@@ -240,9 +260,151 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
             R.id.action_set_auto_update -> showAutoUpdateDialog()
             R.id.action_about -> showAboutDialog()
             R.id.action_manage_notifications -> showNotificationListActivity()
+            R.id.action_leave_feedback -> showFeedbackDialog()
+            R.id.action_share -> launchShareDialog()
         }
 
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun launchShareDialog() {
+        val preview = window.decorView
+        takeScreenShotAndShare(this,
+                preview,
+                true,
+                getString(R.string.share_text))
+    }
+
+    private fun takeScreenShotAndShare(context: Context, view: View, incText: Boolean, text: String) {
+
+        try {
+
+            val mPath = File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "fts_screenshot.png")
+            //File imageDirectory = new File(mPath, "screenshot.png");
+
+            view.isDrawingCacheEnabled = true
+            val bitmap = Bitmap.createBitmap(view.drawingCache)
+            view.isDrawingCacheEnabled = false
+
+            val fOut = FileOutputStream(mPath)
+            val quality = 100
+            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, fOut)
+            fOut.flush()
+            fOut.close()
+
+            val shareIntent = Intent(Intent.ACTION_SEND)
+            val pictureUri = Uri.fromFile(mPath)
+            shareIntent.type = "image/*"
+            if (incText) {
+                shareIntent.putExtra(Intent.EXTRA_TEXT, text)
+            }
+            shareIntent.putExtra(Intent.EXTRA_STREAM, pictureUri)
+            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            context.startActivity(Intent.createChooser(shareIntent, getString(R.string.share_using)))
+        } catch (tr: Throwable) {
+            println("Couldn't save screenshot, $tr")
+        }
+
+    }
+
+    private fun logNegative() {
+        val bundle = Bundle()
+        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, this.localClassName)
+        bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, "negative feedback")
+        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "text")
+        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle)
+    }
+
+    private fun logPositive() {
+        val bundle = Bundle()
+        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, this.localClassName)
+        bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, "positive feedback")
+        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "text")
+        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle)
+    }
+
+    private fun openAppRating(context: Context) {
+        // you can also use BuildConfig.APPLICATION_ID
+        val appId = context.packageName
+        val rateIntent = Intent(Intent.ACTION_VIEW,
+                Uri.parse("market://details?id=$appId"))
+        var marketFound = false
+
+        // find all applications able to handle our rateIntent
+        val otherApps = context.packageManager
+                .queryIntentActivities(rateIntent, 0)
+        for (otherApp in otherApps) {
+            // look for Google Play application
+            if (otherApp.activityInfo.applicationInfo.packageName == "com.android.vending") {
+
+                val otherAppActivity = otherApp.activityInfo
+                val componentName = ComponentName(
+                        otherAppActivity.applicationInfo.packageName,
+                        otherAppActivity.name
+                )
+                // make sure it does NOT open in the stack of your activity
+                rateIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                // task reparenting if needed
+                rateIntent.addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+                // if the Google Play was already open in a search result
+                //  this make sure it still go to the app page you requested
+                rateIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                // this make sure only the Google Play app is allowed to
+                // intercept the intent
+                rateIntent.component = componentName
+                context.startActivity(rateIntent)
+                marketFound = true
+                break
+            }
+        }
+
+        // if GP not present on device, open web browser
+        if (!marketFound) {
+            val webIntent = Intent(Intent.ACTION_VIEW,
+                    Uri.parse("https://play.google.com/store/apps/details?id=$appId"))
+            context.startActivity(webIntent)
+        }
+    }
+
+    private fun showFeedbackDialog() {
+        val dialog = AlertDialog.Builder(this).create()
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        prefs.edit().putLong("last_feedback_ask", System.currentTimeMillis()).apply()
+        val v = layoutInflater.inflate(R.layout.leave_feedback_layout, null)
+        val btNegative = v.btNegativeFeedback
+        val btNeutral = v.btNeutralFeedback
+        val btPositive = v.btPositiveFeedback
+
+        val negListener = View.OnClickListener {
+            Toast.makeText(this, R.string.next_time, Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+            logNegative()
+        }
+
+
+        btNegative.setOnClickListener(negListener)
+        btNeutral.setOnClickListener(negListener)
+
+        btPositive.setOnClickListener {
+            dialog.dismiss()
+            prefs.edit().putLong("feedback_time", System.currentTimeMillis()).apply()
+            logPositive()
+
+            openAppRating(this)
+
+        }
+
+
+
+        dialog.setTitle(R.string.title_leave_feedback)
+        dialog.setView(v)
+        val dialogBtListener = DialogInterface.OnClickListener { _, _ ->
+            prefs.edit().putLong("first_run", System.currentTimeMillis()).apply()
+        }
+        dialog.setButton(AlertDialog.BUTTON_NEUTRAL,
+                getString(R.string.leave_me_alone),
+                dialogBtListener)
+        dialog.show()
     }
 
     private fun showAutoUpdateDialog() {
@@ -259,7 +421,7 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
             ed.isEnabled = sw.isChecked
         }
 
-        val listener = DialogInterface.OnClickListener { dialogInterface, i ->
+        val listener = DialogInterface.OnClickListener { _, _ ->
             //            println("onClick: sw, edt = " + sw.isChecked + ed.text.toString())
             var time = Integer.parseInt(ed.text.toString())
 //            println("onClick: time = $time")
@@ -301,7 +463,7 @@ class MainActivity : AppCompatActivity(), SummaryFragment.OnListFragmentInteract
 //        val v = layoutInflater.inflate(R.layout.about_layout, null)
         builder.setTitle(R.string.action_about)
         builder.setView(R.layout.about_layout)
-        val listener = DialogInterface.OnClickListener { dialogInterface, i ->
+        val listener = DialogInterface.OnClickListener { _, _ ->
             showInterstitial()
         }
         builder.setPositiveButton(R.string.ok, listener)
