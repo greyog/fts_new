@@ -41,7 +41,7 @@ class NotificationWorker(val context: Context, val workerParams: WorkerParameter
 
         fun isWorking(): Boolean {
             var status = false
-            val r = WorkManager.getInstance().getStatusesByTag(TAG).get().map {
+            val r = WorkManager.getInstance().getWorkInfosByTag(TAG).get().map {
                 println("${this::class.java.simpleName}: ${it.id}, ${it.state}")
                 status = status || !it.state.isFinished
             }
@@ -54,7 +54,7 @@ class NotificationWorker(val context: Context, val workerParams: WorkerParameter
 
         checkConditions()
 //        val bg: CoroutineContext = CoroutineContext
-        return Result.SUCCESS
+        return Result.success()
     }
 
     private fun checkConditions() {

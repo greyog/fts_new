@@ -27,6 +27,7 @@ class NotificationsListViewModel(app: Application) : AndroidViewModel(app) {
         refreshList()
     }
 
+
     private fun refreshList() {
         notificationList.value = model.getNotificationList()
     }

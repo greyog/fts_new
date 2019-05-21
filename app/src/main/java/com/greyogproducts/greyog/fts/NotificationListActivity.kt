@@ -31,6 +31,7 @@ class NotificationListActivity : AppCompatActivity(), NotificationListAdapter.On
         ViewModelProviders.of(this)[NotificationsListViewModel::class.java]
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_notifications)
@@ -43,8 +44,8 @@ class NotificationListActivity : AppCompatActivity(), NotificationListAdapter.On
                 editNotification(null)
         }
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
         list_notifications.adapter = NotificationListAdapter(viewModel, this)
+
 
     }
 

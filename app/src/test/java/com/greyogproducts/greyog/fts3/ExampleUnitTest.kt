@@ -1,8 +1,6 @@
 package com.greyogproducts.greyog.fts3
 
-import org.junit.Test
-
-import org.junit.Assert.*
+import junit.framework.Assert.assertEquals
 
 /**
  * Example local unit test, which will execute on the development machine (host).
